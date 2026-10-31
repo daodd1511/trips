@@ -23,6 +23,17 @@ app.get("*", async (c, next) => {
   return serveStatic({ path: "./dist/index.html" })(c, next);
 });
 
+const server = Bun.serve({ port, fetch: app.fetch });
 console.log(`trips listening on :${port}`);
 
-export default { port, fetch: app.fetch };
+// The container runs this process as PID 1, which ignores signals without a handler.
+// Without this, every deploy waits for Docker's timeout and kills the open database.
+function shutdown(signal: string): void {
+  console.log(`${signal} received, shutting down`);
+  void server.stop().finally(() => {
+    db.close();
+    process.exit(0);
+  });
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

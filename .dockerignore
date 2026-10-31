@@ -7,4 +7,6 @@ docs
 .github
 *.log
 *.local
+.env
+.env.*
 .DS_Store
