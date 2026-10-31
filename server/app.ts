@@ -19,6 +19,7 @@ import {
 import { HttpError, todayIn } from "./http.ts";
 import { categoryRoutes } from "./routes/categories.ts";
 import { expenseRoutes } from "./routes/expenses.ts";
+import { exportRoutes } from "./routes/export.ts";
 import { placeRoutes } from "./routes/places.ts";
 import { stayRoutes } from "./routes/stays.ts";
 import { tripRoutes } from "./routes/trips.ts";
@@ -47,6 +48,7 @@ export function createApp({
   timeZone = "Asia/Ho_Chi_Minh",
 }: AppDeps) {
   const secret = sessionSecret(password);
+  const today = () => todayIn(timeZone, now());
 
   // Hono copies a sub-app's routes when `.route()` is called, so every route must be
   // attached here before `api` is mounted below.
@@ -56,7 +58,8 @@ export function createApp({
     .route("/", placeRoutes(db))
     .route("/", categoryRoutes(db))
     .route("/", stayRoutes(db))
-    .route("/", expenseRoutes(db, () => todayIn(timeZone, now())));
+    .route("/", expenseRoutes(db, today))
+    .route("/", exportRoutes(db, now, today));
 
   return new Hono()
     .onError((err, c) => {
