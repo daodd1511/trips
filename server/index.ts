@@ -16,7 +16,7 @@ mkdirSync(dataDir, { recursive: true });
 const db = openDb(join(dataDir, "trips.db"));
 migrate(db);
 
-const app = createApp({ db, password });
+const app = createApp({ db, password, timeZone: process.env.TIME_ZONE ?? "Asia/Ho_Chi_Minh" });
 app.use("/*", serveStatic({ root: "./dist" }));
 app.get("*", async (c, next) => {
   if (c.req.path.startsWith("/api/")) return next();

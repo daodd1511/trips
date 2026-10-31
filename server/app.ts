@@ -15,6 +15,12 @@ import {
   signSession,
   verifySession,
 } from "./auth.ts";
+import { HttpError, todayIn } from "./http.ts";
+import { categoryRoutes } from "./routes/categories.ts";
+import { expenseRoutes } from "./routes/expenses.ts";
+import { placeRoutes } from "./routes/places.ts";
+import { stayRoutes } from "./routes/stays.ts";
+import { tripRoutes } from "./routes/trips.ts";
 
 export type AppDeps = {
   db: Database;
@@ -22,17 +28,41 @@ export type AppDeps = {
   /** Clock in epoch milliseconds. */
   now?: () => number;
   limiter?: LoginLimiter;
+  /** IANA zone for "today" when an expense has no date. */
+  timeZone?: string;
 };
 
 const loginInput = z.object({ password: z.string().min(1).max(200) });
 
-/** Builds the HTTP app. `/api/*` requires a session except login, logout, and session. */
-export function createApp({ db, password, now = Date.now, limiter = createLoginLimiter() }: AppDeps) {
+/**
+ * Builds the HTTP app. `/api/*` requires a session except login, logout, and session,
+ * which are registered before the authenticated sub-app and never reach its middleware.
+ */
+export function createApp({
+  db,
+  password,
+  now = Date.now,
+  limiter = createLoginLimiter(),
+  timeZone = "Asia/Ho_Chi_Minh",
+}: AppDeps) {
   const secret = sessionSecret(password);
 
-  const api = new Hono().use(requireAuth(secret, now));
+  // Hono copies a sub-app's routes when `.route()` is called, so every route must be
+  // attached here before `api` is mounted below.
+  const api = new Hono()
+    .use(requireAuth(secret, now))
+    .route("/", tripRoutes(db))
+    .route("/", placeRoutes(db))
+    .route("/", categoryRoutes(db))
+    .route("/", stayRoutes(db))
+    .route("/", expenseRoutes(db, () => todayIn(timeZone, now())));
 
   return new Hono()
+    .onError((err, c) => {
+      if (err instanceof HttpError) return c.json({ error: err.message }, err.status);
+      console.error(err);
+      return c.json({ error: "Something went wrong" }, 500);
+    })
     .get("/health/ready", (c) => {
       try {
         db.query("SELECT 1").get();
