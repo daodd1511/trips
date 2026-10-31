@@ -9,17 +9,23 @@ const THEME_COLOR: Record<ThemeKey, string> = {
   "ink-chili": "#18181b",
 };
 
+function apply(theme: ThemeKey): void {
+  document.documentElement.dataset.theme = theme;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_COLOR[theme]);
+}
+
 /**
  * Applies a trip palette to the document root, so portalled drawers and dialogs inherit
- * it, and matches the browser chrome color. Restores the default palette on unmount.
+ * it, and matches the browser chrome color. With `restoreTo`, unmounting puts that
+ * palette back; use it for a temporary preview.
  */
-export function useTripTheme(theme: ThemeKey | undefined): void {
+export function useTripTheme(theme: ThemeKey | undefined, restoreTo?: ThemeKey): void {
   useEffect(() => {
-    const key = theme ?? DEFAULT_THEME;
-    document.documentElement.dataset.theme = key;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_COLOR[key]);
-    return () => {
-      document.documentElement.dataset.theme = DEFAULT_THEME;
-    };
+    apply(theme ?? DEFAULT_THEME);
   }, [theme]);
+
+  useEffect(() => {
+    if (!restoreTo) return;
+    return () => apply(restoreTo);
+  }, [restoreTo]);
 }
