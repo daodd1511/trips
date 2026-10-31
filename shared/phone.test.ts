@@ -19,3 +19,12 @@ test.each([
 ])("%p has no phone number", (text) => {
   expect(findPhoneNumber(text)).toBeNull();
 });
+
+test.each([
+  ["So 12 0901234567", "0901234567"],
+  ["Gia 30.000 0901234567", "0901234567"],
+  ["0901234567 0912345678", "0901234567"],
+  ["0901 234 567 - 0912 345 678", "0901234567"],
+])("%p finds the number after other digits: %p", (text, expected) => {
+  expect(findPhoneNumber(text)).toBe(expected);
+});
