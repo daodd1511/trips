@@ -48,6 +48,12 @@ neutral, so the palette can change per trip without breaking the layout.
 | `--accent-soft` | Warning alert, quick amount chips, rating below the selected value |
 | `--accent-deep` | Accent-colored text and icons on white or on accent-soft |
 
+In code, the palette tokens are `--trip-main`, `--trip-main-2`, `--trip-main-ink`,
+`--trip-main-muted`, `--trip-accent`, `--trip-accent-ink`, `--trip-accent-soft`, and
+`--trip-accent-deep`, exposed to Tailwind as `main`, `main-2`, `main-ink`, `main-muted`,
+`brand`, `brand-ink`, `brand-soft`, and `brand-deep`. The prefix avoids a clash with
+shadcn's own `--accent` variable, which means a hover background.
+
 **Never place `--accent` as text or an icon on white.** Light accents, such as
 Lantern's yellow, fail contrast there. Use `--accent-deep` instead.
 

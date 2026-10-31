@@ -11,12 +11,12 @@ import. Tests: `bun test`, backend and shared only — no frontend tests, by use
 
 ## STATUS
 
-- Current phase: 4 — in-progress
+- Current phase: 5 — in-progress
 - Phase 1 — Backend foundation: done (gate passed; fresh review: 4 P2 fixed, re-review P1 resolved by user decision on phone format, final fix not re-reviewed)
 - Phase 2 — Domain API: done (gate passed; fresh review: 1 P2 fixed, re-review clean)
 - Phase 3 — Export and import: done (gate passed; fresh review: 2 P2 fixed, re-review clean)
-- Phase 4 — Frontend foundation: in-progress
-- Phase 5 — Frontend screens: pending
+- Phase 4 — Frontend foundation: done (gate passed; fresh review not required)
+- Phase 5 — Frontend screens: in-progress
 - Phase 6 — Deploy: pending
 - Verification debt: none
 
@@ -120,22 +120,26 @@ Branch: `place-manager/phase-4-frontend-foundation` (off `main`)
 Theme, components, data layer, and shell must exist before any screen.
 
 Consumes: `type AppType`, `shared/schemas.ts` types, `THEME_KEYS`, `parsePrice`, `parseQuickEntry`
-Produces: `src/lib/api.ts` → `api` (`hc<AppType>` client); `src/lib/queries.ts` → TanStack Query hooks `useTrips`, `useActiveTrip`, `usePlaces`, `useCategories`, `useStays`, `useExpenses`, and matching mutation hooks; `src/components/theme/TripTheme.tsx` → `<TripTheme theme={ThemeKey}>`; `src/components/layout/AppShell.tsx`, `BottomNav.tsx`, `MainHeader.tsx`; routes in `src/router.tsx`
+Produces: `src/lib/api.ts` → `client` (`hc<AppType>`), `unwrap`, `ApiError` (with `status` and `body`); `src/lib/format.ts` → `formatMoney`, `formatMoneyShort`, `formatDay`, `formatShortDate`, `formatRange`, `nightsBetween`, `localToday`; `src/lib/category-icons.ts` → `categoryIcon`, `categoryShortName`; `src/lib/palettes.ts` → `PALETTES`, `CURRENCIES`; `src/components/theme/PalettePicker.tsx`, `src/components/trips/TripForm.tsx`, `src/components/data/ImportButton.tsx`, `src/components/layout/FullScreenMessage.tsx`; `useTrip()` from `AppShell` (active `TripSummary`); `AppShell withNav`, `PlainShell`, `RequireAuth`; `src/lib/queries.ts` → TanStack Query hooks `useTrips`, `useActiveTrip`, `usePlaces`, `useCategories`, `useStays`, `useExpenses`, and matching mutation hooks; `src/components/theme/use-trip-theme.ts` → `useTripTheme(theme)` (sets `data-theme` on the document root so portals inherit it); `src/components/layout/AppShell.tsx`, `BottomNav.tsx`, `MainHeader.tsx` (`MainHeader`, `FormHeader`); routes in `src/router.tsx`
 
 Fresh review: not required
 
-- [ ] Tailwind v4 via `@tailwindcss/vite`; `npx shadcn@latest init`, then `npx shadcn@latest add button input textarea select toggle-group drawer alert-dialog alert badge sonner tabs` (CLI only, per PLAN.md → "Stack")
-- [ ] `src/index.css`: DESIGN.md tokens and the five palettes as `[data-theme]` blocks; map shadcn variables (`--primary` → accent, etc.); Lexend via `@fontsource/lexend`; `lucide-react` icons
-- [ ] Customize installed components to DESIGN.md → "Components" (pill radius, `onMain` button variant, ToggleGroup selected → `--main`, floating Drawer inset)
-- [ ] `src/lib/format.ts`: `formatMoney(amount, currency)`, `formatMoneyShort`, date formats per DESIGN.md → "Formatting"; `src/lib/category-icons.ts` per DESIGN.md → "Icons"
-- [ ] `src/lib/api.ts`, `src/lib/queries.ts` (`@tanstack/react-query`), `src/router.tsx` (`react-router`): routes `/login`, `/welcome`, `/places`, `/places/new`, `/places/:id/edit`, `/stays`, `/spending`, `/trip`, `/trips`, `/categories`
-- [ ] `src/pages/LoginPage.tsx` and `src/pages/WelcomePage.tsx` (first run: create trip, import); auth guard redirects to `/login` on 401 and to `/welcome` when no trips exist
-- [ ] `AppShell` applies `<TripTheme>` from the active trip; `BottomNav` per DESIGN.md (Places, Stays, Add, Spending, Trip)
-- [ ] Remove the Vite demo files (`src/App.css`, `src/assets/react.svg`, demo `App.tsx` content)
+- [x] Tailwind v4 via `@tailwindcss/vite`; `npx shadcn@latest init`, then `npx shadcn@latest add button input textarea select toggle-group drawer alert-dialog alert badge sonner tabs` (CLI only, per PLAN.md → "Stack")
+- [x] `src/index.css`: DESIGN.md tokens and the five palettes as `[data-theme]` blocks; map shadcn variables (`--primary` → accent, etc.); Lexend via `@fontsource/lexend`; `lucide-react` icons
+- [x] Customize installed components to DESIGN.md → "Components" (pill radius, `onMain` button variant, ToggleGroup selected → `--main`, floating Drawer inset)
+- [x] `src/lib/format.ts`: `formatMoney(amount, currency)`, `formatMoneyShort`, date formats per DESIGN.md → "Formatting"; `src/lib/category-icons.ts` per DESIGN.md → "Icons"
+- [x] `src/lib/api.ts`, `src/lib/queries.ts` (`@tanstack/react-query`), `src/router.tsx` (`react-router`): routes `/login`, `/welcome`, `/places`, `/places/new`, `/places/:id/edit`, `/stays`, `/spending`, `/trip`, `/trips`, `/categories`
+- [x] `src/pages/LoginPage.tsx` and `src/pages/WelcomePage.tsx` (first run: create trip, import); auth guard redirects to `/login` on 401 and to `/welcome` when no trips exist
+- [x] `AppShell` applies `<TripTheme>` from the active trip; `BottomNav` per DESIGN.md (Places, Stays, Add, Spending, Trip)
+- [x] Remove the Vite demo files (`src/App.css`, `src/assets/react.svg`, demo `App.tsx` content)
+
+- [x] (amended 2026-11-01) `tsconfig.app.json`: add `bun` to `types` so `import type { AppType }` type-checks the server files it pulls in; drop `baseUrl`, which TypeScript 7 removed
+- [x] (amended 2026-11-01) `vite.config.ts`: proxy target reads `API_PORT` (default 3000); port 3000 is taken on the dev machine
+- [x] (amended 2026-11-01) `src/components/ui/select.tsx`: restyle the trigger like `Input`; `next-themes` removed with the Sonner theme hook
 
 **Phase gate (hard):**
-- [ ] `bun run typecheck`
-- [ ] No test item: no frontend tests, by user decision
+- [x] `bun run typecheck`
+- [x] No test item: no frontend tests, by user decision
 
 **On completion:** run the phase gate; run `fresh-review` when the recorded or actual-diff
 decision requires it; update STATUS + checkboxes; stop and ask before push/PR.
