@@ -9,8 +9,8 @@ import. Tests: `bun test`, backend and shared only — no frontend tests, by use
 
 ## STATUS
 
-- Current phase: 1 — pending
-- Phase 1 — Backend foundation: pending
+- Current phase: 1 — done
+- Phase 1 — Backend foundation: done (gate passed; fresh review: 4 P2 fixed, re-review P1 resolved by user decision on phone format, final fix not re-reviewed)
 - Phase 2 — Domain API: pending
 - Phase 3 — Export and import: pending
 - Phase 4 — Frontend foundation: pending
@@ -24,26 +24,32 @@ Branch: `place-manager/phase-1-backend-foundation` (off `main`)
 
 Everything server-side depends on the DB, schema, shared types, and auth landing first.
 
-Produces: `shared/price.ts` → `type ParseResult<T> = { ok: true; value: T } | { ok: false; error: string }`, `parsePrice(token: string): ParseResult<number>`, `parseQuickEntry(line: string): ParseResult<{ name: string; amount: number }>`; `shared/phone.ts` → `findPhoneNumber(text: string): string | null`; `shared/themes.ts` → `THEME_KEYS`, `type ThemeKey`, `DEFAULT_THEME`; `shared/schemas.ts` → Zod `tripInput`, `placeInput`, `stayInput`, `expenseInput`, `categoryInput` and types `Trip`, `Place`, `PlaceStatus`, `Stay`, `Expense`, `Category`; `server/db.ts` → `openDb(path: string): Database`, `migrate(db: Database): void`; `server/auth.ts` → `signSession(expiresAt: number, secret: string): string`, `verifySession(token: string, secret: string, now: number): boolean`, `requireAuth`, `loginLimiter`; `server/app.ts` → `createApp(deps: { db: Database; password: string; now?: () => number }): Hono`, `type AppType`
+Produces: `shared/price.ts` → `type ParseResult<T> = { ok: true; value: T } | { ok: false; error: string }`, `parsePrice(token: string): ParseResult<number>`, `parseQuickEntry(line: string): ParseResult<{ name: string; amount: number }>`; `shared/phone.ts` → `findPhoneNumber(text: string): string | null` (10 digits starting with `0`); `shared/themes.ts` → `THEME_KEYS`, `type ThemeKey`, `DEFAULT_THEME`; `shared/schemas.ts` → Zod `tripInput`, `placeInput`, `stayInput`, `expenseInput`, `categoryInput` and types `Trip`, `Place`, `PlaceStatus`, `Stay`, `Expense`, `Category`; `server/db.ts` → `openDb(path: string): Database`, `migrate(db: Database, dir?: string): void`, `categoryKey(name: string): string`; `server/auth.ts` → `sessionSecret(password: string): string`, `signSession(expiresAt: number, secret: string): string`, `verifySession(token: string, secret: string, now: number): boolean`, `requireAuth(secret: string, now: () => number): MiddlewareHandler`, `createLoginLimiter(max?, windowMs?): LoginLimiter`; `server/app.ts` → `createApp(deps: AppDeps)` with `AppDeps = { db; password; now?; limiter? }`; domain routes mount on its internal `api` sub-app, `type AppType`
 
 Fresh review: required — authentication and persistent-data migrations
 
-- [ ] Add deps `hono`, `zod`; add `tsconfig.server.json` (strict, `types: ["bun"]`, include `server`, `shared`) and reference it from `tsconfig.json`; add `@types/bun`
-- [ ] `shared/price.ts`: parser per PLAN.md → "Price parser", including the separator-without-suffix rule
-- [ ] `shared/phone.ts`: 9–11 digits, optional `+`, separators space/`.`/`-`, per PLAN.md → "Stays"
-- [ ] `shared/themes.ts`: the five keys from DESIGN.md → "Palettes", default `pine-berry`
-- [ ] `shared/schemas.ts`: Zod schemas and inferred types for every table in PLAN.md → "Data model" and "Field rules"
-- [ ] `server/migrations/001_init.sql`: all tables, FKs on, `ON DELETE CASCADE` trip → places/stays/expenses, `ON DELETE SET NULL` expenses.place_id, CHECKs for status, rating 1–10, amount > 0, currency 3 letters; unique `lower(name)` on categories
-- [ ] `server/db.ts`: `openDb` sets `PRAGMA foreign_keys = ON` and WAL; `migrate` applies `server/migrations/*.sql` in order, tracked in `schema_migrations`, each in a transaction; seeds default categories and system **Other** once
-- [ ] `server/auth.ts`: HMAC-SHA256 session token `<expiresAt>.<sig>` keyed on `HMAC(APP_PASSWORD, "trips-session-v1")`; constant-time compare; limiter 5 failed logins per IP per minute, IP from `CF-Connecting-IP` then socket address (judgment call: numbers match the login mock)
-- [ ] `server/app.ts`: `POST /api/login` (sets cookie `session`, HttpOnly, Secure, SameSite=Lax, Max-Age 1 year), `POST /api/logout`, `GET /api/session`, `GET /health/ready` (runs `SELECT 1`), `requireAuth` on every other `/api/*`
-- [ ] `server/index.ts`: reads `APP_PASSWORD` (required), `DATA_DIR` (default `./data`), `PORT` (default `3000`); opens `${DATA_DIR}/trips.db`, migrates, serves `dist/` with SPA fallback
-- [ ] `package.json` scripts: `dev:server` (`bun --watch server/index.ts`), `typecheck` (`tsc -b`), `test` (`bun test`); Vite dev proxy `/api` and `/health` → `localhost:3000` in `vite.config.ts`
-- [ ] Tests: `shared/price.test.ts` (every row of PLAN.md's parser table), `shared/phone.test.ts`, `server/auth.test.ts` (sign/verify, expiry, wrong password, rate limit), `server/db.test.ts` (migrate is idempotent, seeds Other once, FK cascade)
+- [x] Add deps `hono`, `zod`; add `tsconfig.server.json` (strict, `types: ["bun"]`, include `server`, `shared`) and reference it from `tsconfig.json`; add `@types/bun`
+- [x] `shared/price.ts`: parser per PLAN.md → "Price parser", including the separator-without-suffix rule
+- [x] `shared/phone.ts`: 9–11 digits, optional `+`, separators space/`.`/`-`, per PLAN.md → "Stays"
+- [x] `shared/themes.ts`: the five keys from DESIGN.md → "Palettes", default `pine-berry`
+- [x] `shared/schemas.ts`: Zod schemas and inferred types for every table in PLAN.md → "Data model" and "Field rules"
+- [x] `server/migrations/001_init.sql`: all tables, FKs on, `ON DELETE CASCADE` trip → places/stays/expenses, `ON DELETE SET NULL` expenses.place_id, CHECKs for status, rating 1–10, amount > 0, currency 3 letters; unique `lower(name)` on categories
+- [x] `server/db.ts`: `openDb` sets `PRAGMA foreign_keys = ON` and WAL; `migrate` applies `server/migrations/*.sql` in order, tracked in `schema_migrations`, each in a transaction; seeds default categories and system **Other** once
+- [x] `server/auth.ts`: HMAC-SHA256 session token `<expiresAt>.<sig>` keyed on `HMAC(APP_PASSWORD, "trips-session-v1")`; constant-time compare; limiter 5 failed logins per IP per minute, IP from `CF-Connecting-IP` then socket address (judgment call: numbers match the login mock)
+- [x] `server/app.ts`: `POST /api/login` (sets cookie `session`, HttpOnly, Secure, SameSite=Lax, Max-Age 1 year), `POST /api/logout`, `GET /api/session`, `GET /health/ready` (runs `SELECT 1`), `requireAuth` on every other `/api/*`
+- [x] `server/index.ts`: reads `APP_PASSWORD` (required), `DATA_DIR` (default `./data`), `PORT` (default `3000`); opens `${DATA_DIR}/trips.db`, migrates, serves `dist/` with SPA fallback
+- [x] `package.json` scripts: `dev:server` (`bun --watch server/index.ts`), `typecheck` (`tsc -b`), `test` (`bun test`); Vite dev proxy `/api` and `/health` → `localhost:3000` in `vite.config.ts`
+- [x] Tests: `shared/price.test.ts` (every row of PLAN.md's parser table), `shared/phone.test.ts`, `server/auth.test.ts` (sign/verify, expiry, wrong password, rate limit), `server/db.test.ts` (migrate is idempotent, seeds Other once, FK cascade)
+- [x] (amended 2026-11-01) `shared/price.ts`: exact BigInt arithmetic so long fractions such as `1.0000000000000001k` are rejected, not rounded; test in `shared/price.test.ts`
+- [x] (amended 2026-11-01) `shared/phone.ts`: find the first 9–11 digit span inside longer digit runs (after a house number, a price, or a second number); tests in `shared/phone.test.ts`
+- [x] (amended 2026-11-01) `server/migrations/001_init.sql`: declare every table `STRICT` so text or real amounts and ratings are rejected; test in `server/db.test.ts`
+- [x] (amended 2026-11-01) `server/db.ts` `categoryKey`: NFC-normalize before lowercasing; test in `server/db.test.ts`
+- [x] (amended 2026-11-01) `shared/phone.ts`: narrow to 10 digits starting with `0`, no separators, per user decision after re-review; tests in `shared/phone.test.ts`; PLAN.md → "Stays" updated
+- [x] (amended 2026-11-01) `server/migrations/001_init.sql`: drop the seeded Stay category, per user decision; seed test in `server/db.test.ts`; PLAN.md → "Categories" updated
 
 **Phase gate (hard):**
-- [ ] `bun run typecheck`
-- [ ] `bun test server shared` (fallback: bun has no related-tests mode; narrowest suite holding all backend consumers)
+- [x] `bun run typecheck`
+- [x] `bun test server shared` (fallback: bun has no related-tests mode; narrowest suite holding all backend consumers)
 
 **On completion:** run the phase gate; run `fresh-review` when the recorded or actual-diff
 decision requires it; update STATUS + checkboxes; stop and ask before push/PR.
