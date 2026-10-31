@@ -39,7 +39,10 @@ export function migrate(db: Database, dir: string = MIGRATIONS_DIR): void {
   }
 }
 
-/** Key for case-insensitive category name matching, with full Unicode case folding. */
+/**
+ * Key for case-insensitive category name matching: NFC-normalized and lowercased, so
+ * decomposed input (common from macOS and iOS) matches its composed form.
+ */
 export function categoryKey(name: string): string {
-  return name.trim().toLowerCase();
+  return name.trim().normalize("NFC").toLowerCase();
 }

@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { migrate, openDb } from "./db.ts";
+import { categoryKey, migrate, openDb } from "./db.ts";
 
 function fresh() {
   const db = openDb(":memory:");
@@ -70,4 +70,22 @@ test("a failed migration rolls back and is not recorded", () => {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("STRICT tables reject text and real values in integer columns", () => {
+  const db = fresh();
+  db.exec("INSERT INTO trips (id, name, currency) VALUES (1, 'Đà Lạt', 'VND')");
+  for (const amount of ["'abc'", "0.5"]) {
+    expect(() =>
+      db.exec(`INSERT INTO expenses (trip_id, name, amount, spent_on) VALUES (1, 'x', ${amount}, '2026-11-19')`),
+    ).toThrow();
+  }
+  expect(() =>
+    db.exec("INSERT INTO places (trip_id, name, maps_url, status, rating) VALUES (1, 'x', 'u', 'visited', 7.5)"),
+  ).toThrow();
+});
+
+test("categoryKey matches composed and decomposed Vietnamese", () => {
+  expect(categoryKey("Cà phê")).toBe(categoryKey("Cà phê".normalize("NFD")));
+  expect(categoryKey(" CÀ PHÊ ")).toBe(categoryKey("cà phê"));
 });

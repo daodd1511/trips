@@ -4,7 +4,7 @@ CREATE TABLE trips (
   currency TEXT NOT NULL CHECK (length(currency) = 3 AND currency = upper(currency)),
   theme TEXT NOT NULL DEFAULT 'pine-berry',
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-);
+) STRICT;
 
 CREATE TABLE places (
   id INTEGER PRIMARY KEY,
@@ -18,7 +18,7 @@ CREATE TABLE places (
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   CHECK (rating IS NULL OR status = 'visited')
-);
+) STRICT;
 CREATE INDEX places_trip ON places (trip_id);
 
 -- name_key holds the name lowercased by the app with full Unicode rules; SQLite's
@@ -29,13 +29,13 @@ CREATE TABLE categories (
   name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 40),
   name_key TEXT NOT NULL UNIQUE,
   is_system INTEGER NOT NULL DEFAULT 0 CHECK (is_system IN (0, 1))
-);
+) STRICT;
 
 CREATE TABLE place_categories (
   place_id INTEGER NOT NULL REFERENCES places (id) ON DELETE CASCADE,
   category_id INTEGER NOT NULL REFERENCES categories (id) ON DELETE CASCADE,
   PRIMARY KEY (place_id, category_id)
-);
+) STRICT;
 CREATE INDEX place_categories_category ON place_categories (category_id);
 
 CREATE TABLE stays (
@@ -48,7 +48,7 @@ CREATE TABLE stays (
   notes TEXT CHECK (notes IS NULL OR length(notes) <= 2000),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   CHECK (check_in IS NULL OR check_out IS NULL OR check_out >= check_in)
-);
+) STRICT;
 CREATE INDEX stays_trip ON stays (trip_id);
 
 CREATE TABLE expenses (
@@ -59,7 +59,7 @@ CREATE TABLE expenses (
   amount INTEGER NOT NULL CHECK (amount > 0),
   spent_on TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-);
+) STRICT;
 CREATE INDEX expenses_trip ON expenses (trip_id);
 CREATE INDEX expenses_place ON expenses (place_id);
 
@@ -67,7 +67,7 @@ CREATE INDEX expenses_place ON expenses (place_id);
 CREATE TABLE settings (
   id INTEGER PRIMARY KEY CHECK (id = 1),
   active_trip_id INTEGER REFERENCES trips (id) ON DELETE SET NULL
-);
+) STRICT;
 INSERT INTO settings (id, active_trip_id) VALUES (1, NULL);
 
 INSERT INTO categories (name, name_key, is_system) VALUES
