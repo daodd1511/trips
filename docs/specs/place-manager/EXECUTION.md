@@ -10,9 +10,9 @@ import. Tests: `bun test`, backend and shared only — no frontend tests, by use
 
 ## STATUS
 
-- Current phase: 1 — done
+- Current phase: 2 — done
 - Phase 1 — Backend foundation: done (gate passed; fresh review: 4 P2 fixed, re-review P1 resolved by user decision on phone format, final fix not re-reviewed)
-- Phase 2 — Domain API: pending
+- Phase 2 — Domain API: done (gate passed; fresh review: 1 P2 fixed, re-review clean)
 - Phase 3 — Export and import: pending
 - Phase 4 — Frontend foundation: pending
 - Phase 5 — Frontend screens: pending
@@ -62,22 +62,25 @@ Branch: `place-manager/phase-2-domain-api` (off `main`)
 All CRUD and business rules over the schema from phase 1; the frontend consumes this API.
 
 Consumes: `createApp`, `openDb`, `migrate`, `requireAuth`, schemas and types from `shared/schemas.ts`, `parsePrice`, `THEME_KEYS`
-Produces: routes on `AppType` — `GET|POST /api/trips`, `PATCH|DELETE /api/trips/:id`, `GET|PUT /api/active-trip`, `GET|POST /api/trips/:id/places`, `PATCH|DELETE /api/places/:id`, `GET|POST /api/categories`, `PATCH|DELETE /api/categories/:id`, `GET|POST /api/trips/:id/stays`, `PATCH|DELETE /api/stays/:id`, `GET|POST /api/trips/:id/expenses`, `POST /api/places/:id/expenses`, `PATCH|DELETE /api/expenses/:id`; `server/repo/*.ts` functions named per route
+Produces: `shared/schemas.ts` → `TripSummary`, `PlaceView`, `CategoryView`, `ExpenseList`, `ExpenseDay`, patch schemas `tripPatch`, `placePatch`, `stayPatch`, `expensePatch`, `placeExpenseInput`; `shared/search.ts` → `searchKey(text: string): string`; `server/http.ts` → `HttpError`, `jsonBody`, `idParam`, `todayIn`; `AppDeps.timeZone` (env `TIME_ZONE`, default `Asia/Ho_Chi_Minh`); `POST /api/trips` makes the first trip active; `POST|PATCH` place responses are `{ place: PlaceView, duplicateOf }`; `POST /api/places/:id/expenses` takes `{ price, spentOn? }` and returns `{ expense, place }`; routes on `AppType` — `GET|POST /api/trips`, `PATCH|DELETE /api/trips/:id`, `GET|PUT /api/active-trip`, `GET|POST /api/trips/:id/places`, `PATCH|DELETE /api/places/:id`, `GET|POST /api/categories`, `PATCH|DELETE /api/categories/:id`, `GET|POST /api/trips/:id/stays`, `PATCH|DELETE /api/stays/:id`, `GET|POST /api/trips/:id/expenses`, `POST /api/places/:id/expenses`, `PATCH|DELETE /api/expenses/:id`; `server/repo/*.ts` functions named per route
 
 Fresh review: required — destructive operations (trip and category delete) and financial calculations (expense totals)
 
-- [ ] `server/repo/trips.ts` + `server/routes/trips.ts`: CRUD; currency change rejected (409) when the trip has expenses; theme validated against `THEME_KEYS`; delete cascades and clears `settings.active_trip_id` if it pointed there; list returns place count, total spent, and date range derived from stays
-- [ ] `server/routes/settings.ts`: `GET|PUT /api/active-trip`
-- [ ] `server/repo/places.ts` + `server/routes/places.ts`: CRUD with category ids (≥1, default Other); rating only when `visited`, cleared on leaving `visited`; list filters `status`, `categories` (OR), `q` (name + notes); create/update response carries `duplicateOf` when another place in the trip has the same `maps_url`
-- [ ] `server/repo/categories.ts` + `server/routes/categories.ts`: CRUD; rename/delete of `is_system` rejected (403); delete in one transaction moves places left without a category to Other; delete response returns `{ removedFrom: number, movedToOther: number }`
-- [ ] `server/repo/stays.ts` + `server/routes/stays.ts`: CRUD; `check_out >= check_in` when both set; list sorted per PLAN.md → "Stays"
-- [ ] `server/repo/expenses.ts` + `server/routes/expenses.ts`: CRUD; `POST /api/places/:id/expenses` takes `{ price: string }`, parses with `parsePrice`, copies place name, sets `spent_on` to today, flips `want` → `visited` in the same transaction; list returns items plus grand total and per-day totals
-- [ ] Mount all routes in `server/app.ts` behind `requireAuth`; export the composed `AppType`
-- [ ] Tests: `server/routes/trips.test.ts` (currency lock, cascade, active-trip clear), `server/routes/places.test.ts` (rating rules, duplicate flag, filters), `server/routes/categories.test.ts` (Other protected, delete reassignment counts), `server/routes/expenses.test.ts` (auto-visit, rejected prices, totals per day)
+- [x] `server/repo/trips.ts` + `server/routes/trips.ts`: CRUD; currency change rejected (409) when the trip has expenses; theme validated against `THEME_KEYS`; delete cascades and clears `settings.active_trip_id` if it pointed there; list returns place count, total spent, and date range derived from stays
+- [x] `server/routes/settings.ts`: `GET|PUT /api/active-trip`
+- [x] `server/repo/places.ts` + `server/routes/places.ts`: CRUD with category ids (≥1, default Other); rating only when `visited`, cleared on leaving `visited`; list filters `status`, `categories` (OR), `q` (name + notes); create/update response carries `duplicateOf` when another place in the trip has the same `maps_url`
+- [x] `server/repo/categories.ts` + `server/routes/categories.ts`: CRUD; rename/delete of `is_system` rejected (403); delete in one transaction moves places left without a category to Other; delete response returns `{ removedFrom: number, movedToOther: number }`
+- [x] `server/repo/stays.ts` + `server/routes/stays.ts`: CRUD; `check_out >= check_in` when both set; list sorted per PLAN.md → "Stays"
+- [x] `server/repo/expenses.ts` + `server/routes/expenses.ts`: CRUD; `POST /api/places/:id/expenses` takes `{ price: string }`, parses with `parsePrice`, copies place name, sets `spent_on` to today, flips `want` → `visited` in the same transaction; list returns items plus grand total and per-day totals
+- [x] Mount all routes in `server/app.ts` behind `requireAuth`; export the composed `AppType`
+- [x] Tests: `server/routes/trips.test.ts` (currency lock, cascade, active-trip clear), `server/routes/places.test.ts` (rating rules, duplicate flag, filters), `server/routes/categories.test.ts` (Other protected, delete reassignment counts), `server/routes/expenses.test.ts` (auto-visit, rejected prices, totals per day)
+
+- [x] (amended 2026-11-01) `server/app.ts` `onError`: return Hono `HTTPException` statuses (malformed JSON → 400) instead of 500; test in `server/routes/trips.test.ts`
+- [x] (amended 2026-11-01) `server/routes/stays.test.ts`: date check on create and patch, ordering; omitted-field preservation on place, stay, trip, and expense patches; 401 on a domain route without a session
 
 **Phase gate (hard):**
-- [ ] `bun run typecheck`
-- [ ] `bun test server shared` (fallback, as phase 1)
+- [x] `bun run typecheck`
+- [x] `bun test server shared` (fallback, as phase 1)
 
 **On completion:** run the phase gate; run `fresh-review` when the recorded or actual-diff
 decision requires it; update STATUS + checkboxes; stop and ask before push/PR.
