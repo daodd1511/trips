@@ -3,18 +3,19 @@
 Spec: [PLAN.md](PLAN.md), UI: [DESIGN.md](DESIGN.md). Rulebook: `docs/specs/RULEBOOK.md`.
 Integration branch: `main`. Branch model: sequential, merged locally — no GitHub remote until the deploy
 phase (user decision): each phase fast-forwards `main` locally instead of push + PR; re-probe
-gh stack once origin exists.
+gh stack once origin exists. User authorized phases 3–5 to run, merge, and start the next phase without
+per-phase approval; stop before phase 6.
 
 Layout (single package): `src/` web (Vite root), `server/` Bun + Hono, `shared/` code both
 import. Tests: `bun test`, backend and shared only — no frontend tests, by user decision.
 
 ## STATUS
 
-- Current phase: 2 — done
+- Current phase: 4 — in-progress
 - Phase 1 — Backend foundation: done (gate passed; fresh review: 4 P2 fixed, re-review P1 resolved by user decision on phone format, final fix not re-reviewed)
 - Phase 2 — Domain API: done (gate passed; fresh review: 1 P2 fixed, re-review clean)
-- Phase 3 — Export and import: pending
-- Phase 4 — Frontend foundation: pending
+- Phase 3 — Export and import: done (gate passed; fresh review: 2 P2 fixed, re-review clean)
+- Phase 4 — Frontend foundation: in-progress
 - Phase 5 — Frontend screens: pending
 - Phase 6 — Deploy: pending
 - Verification debt: none
@@ -92,19 +93,22 @@ Branch: `place-manager/phase-3-export-import` (off `main`)
 Reads and writes every table, so it needs the full domain from phase 2 and stands alone as the data-safety path.
 
 Consumes: repo functions from `server/repo/*.ts`, `shared/schemas.ts` types, `THEME_KEYS`
-Produces: `shared/export.ts` → `exportFileSchema` (Zod, `version: 1`), `type ExportFile`; routes `GET /api/export`, `GET /api/trips/:id/export`, `POST /api/import` → `{ trips: { id: number; name: string }[] }`
+Produces: `shared/export.ts` → `exportFileSchema` (Zod, `version: 1`, places carry a file-local `ref`, expenses a `placeRef`), `EXPORT_VERSION`, `type ExportFile`, `type ExportTrip`; `server/repo/export.ts` → `exportTrips(db, now: Date, tripIds?)`; `server/repo/import.ts` → `importFile(db, file, today): ImportResult`; routes `GET /api/export`, `GET /api/trips/:id/export`, `POST /api/import` → `{ trips: { id: number; name: string }[] }`
 
 Fresh review: required — hard-to-reverse writes (bulk import into the live database)
 
-- [ ] `shared/export.ts`: schema per PLAN.md → "Export and import" (trip name, currency, theme, places with category names, stays, expenses with a place reference local to the file)
-- [ ] `server/repo/export.ts`: `exportTrips(db, tripIds?: number[]): ExportFile`
-- [ ] `server/repo/import.ts`: `importFile(db, file: ExportFile, today: string)` in one transaction; rejects unknown `version`; renames clashing trips to `<name> (imported <today>)`; matches categories case-insensitively, maps `Other` to the system row; restores expense → place links; unknown theme → `pine-berry`
-- [ ] `server/routes/export.ts`: export endpoints send `Content-Disposition: attachment; filename="trips-<slug>-<date>.json"`; import accepts JSON body ≤ 5 MB
-- [ ] Tests: `server/repo/import.test.ts` — round trip export → import equals source (ids aside), name clash suffix, category matching, invalid file leaves the DB unchanged, unknown version rejected
+- [x] `shared/export.ts`: schema per PLAN.md → "Export and import" (trip name, currency, theme, places with category names, stays, expenses with a place reference local to the file)
+- [x] `server/repo/export.ts`: `exportTrips(db, tripIds?: number[]): ExportFile`
+- [x] `server/repo/import.ts`: `importFile(db, file: ExportFile, today: string)` in one transaction; rejects unknown `version`; renames clashing trips to `<name> (imported <today>)`; matches categories case-insensitively, maps `Other` to the system row; restores expense → place links; unknown theme → `pine-berry`
+- [x] `server/routes/export.ts`: export endpoints send `Content-Disposition: attachment; filename="trips-<slug>-<date>.json"`; import accepts JSON body ≤ 5 MB
+- [x] Tests: `server/repo/import.test.ts` — round trip export → import equals source (ids aside), name clash suffix, category matching, invalid file leaves the DB unchanged, unknown version rejected
+
+- [x] (amended 2026-11-01) `server/repo/export.ts`: order place categories by `name_key` (Other last) so round trips are stable with custom categories; test in `server/repo/import.test.ts`
+- [x] (amended 2026-11-01) `server/repo/import.ts` `freeTripName`: cut the name so the suffix fits the 200-character limit; test in `server/repo/import.test.ts`
 
 **Phase gate (hard):**
-- [ ] `bun run typecheck`
-- [ ] `bun test server shared` (fallback, as phase 1)
+- [x] `bun run typecheck`
+- [x] `bun test server shared` (fallback, as phase 1)
 
 **On completion:** run the phase gate; run `fresh-review` when the recorded or actual-diff
 decision requires it; update STATUS + checkboxes; stop and ask before push/PR.
