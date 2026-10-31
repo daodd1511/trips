@@ -1,0 +1,54 @@
+/* Design tokens. Neutrals are fixed; main and accent come from the trip palette. */
+:root {
+  --ground: #ffffff;
+  --sunken: #f2f5f3;
+  --sunken-hover: #e6ece9;
+  --ink: #102019;
+  --muted: #5a6a62;
+  --line: #e3e9e6;
+  --scrim: rgb(16 32 25 / 0.45);
+  --danger: #b42318;
+  --danger-soft: #fee4e2;
+
+  --radius-pill: 999px;
+  --radius-tile: 16px;
+  --radius-card: 18px;
+  --radius-sheet: 28px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+
+  --font: "Lexend", system-ui, sans-serif;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 15px;
+  --text-lg: 22px;
+  --text-xl: 30px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Trip palettes. Each pair below passes WCAG AA for text (4.5:1). */
+:root, [data-theme="pine-berry"] {
+  --main: #123a2b; --main-2: #1b4a38; --main-ink: #e8f2ec; --main-muted: #a9c6b7;
+  --accent: #d6245c; --accent-ink: #ffffff; --accent-soft: #fde6ee; --accent-deep: #a8173f;
+}
+[data-theme="sea-coral"] {
+  --main: #0c3a4d; --main-2: #144d64; --main-ink: #e6f3f8; --main-muted: #9cc3d3;
+  --accent: #ff6b57; --accent-ink: #2b0b05; --accent-soft: #ffe7e3; --accent-deep: #a52a17;
+}
+[data-theme="lantern"] {
+  --main: #103f40; --main-2: #1a5152; --main-ink: #e7f3f1; --main-muted: #a3c7c3;
+  --accent: #f6c343; --accent-ink: #2b1d00; --accent-soft: #fdf1cf; --accent-deep: #7a5600;
+}
+[data-theme="rice-gold"] {
+  --main: #34421c; --main-2: #435426; --main-ink: #f1f3e3; --main-muted: #bcc79d;
+  --accent: #e0a325; --accent-ink: #2a1c00; --accent-soft: #fbefd2; --accent-deep: #7b5300;
+}
+[data-theme="ink-chili"] {
+  --main: #18181b; --main-2: #27272b; --main-ink: #f4f4f5; --main-muted: #a8a8b0;
+  --accent: #d92a24; --accent-ink: #ffffff; --accent-soft: #fde4e2; --accent-deep: #a3170f;
+}

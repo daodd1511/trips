@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B · Night market</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/frames.css">
+<style>
+:root {
+  --ground: #0e0e0e;
+  --surface: #191919;
+  --raised: #222222;
+  --ink: #f3f0ea;
+  --muted: #a29e97;
+  --line: #2b2b2b;
+  --line-strong: #3a3a3a;
+  --accent: #f4b443;
+  --accent-ink: #1b1305;
+  --accent-soft: #3a2c10;
+  --danger: #ff8a7a;
+  --r: 12px;
+  --display: "Bricolage Grotesque", "Be Vietnam Pro", sans-serif;
+  --font: "Be Vietnam Pro", system-ui, sans-serif;
+}
+body { background: #050505; color: var(--ink); font-family: var(--font); }
+.board-head p, .shot > figcaption { color: var(--muted); }
+.board-head a { color: var(--accent); }
+.frame { background: var(--ground); box-shadow: 0 0 0 1px #1e1e1e; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+.app { font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums; color-scheme: dark; }
+.app :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 44px; padding: 0 16px; border: 0;
+  border-radius: var(--r); font: 600 14px/1 var(--font); cursor: pointer; white-space: nowrap; text-decoration: none; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { background: #ffc35c; }
+.btn-secondary { background: var(--raised); color: var(--ink); }
+.btn-secondary:hover { background: #2c2c2c; }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn-danger { background: transparent; color: var(--danger); }
+.btn-icon { width: 44px; padding: 0; }
+.btn-sm { height: 34px; padding: 0 12px; font-size: 13px; }
+.btn-sm.btn-icon { width: 34px; }
+
+.head { padding: 54px 16px 0; }
+.head .row1 { display: flex; justify-content: space-between; align-items: center; }
+.head h2 { margin: 0; font: 700 34px/1 var(--display); letter-spacing: -0.03em; }
+.head .sub { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+/* Tabs (shadcn Tabs, top) */
+.tabs { display: flex; gap: 22px; padding: 18px 16px 0; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--ground); z-index: 3; }
+.tabs button { border: 0; background: none; color: var(--muted); font: 600 15px var(--font); padding: 0 0 12px; cursor: pointer; position: relative; }
+.tabs button[aria-selected="true"] { color: var(--ink); }
+.tabs button[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--ink); border-radius: 2px; }
+
+.stay { margin: 16px 16px 0; background: var(--surface); border-radius: var(--r); padding: 14px; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; }
+.stay .k { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+.stay .t { font: 700 18px/1.2 var(--display); letter-spacing: -0.01em; }
+.stay .m { color: var(--muted); font-size: 13px; }
+.stay .btn { grid-row: 2 / 4; grid-column: 2; }
+
+.tools { display: flex; gap: 8px; padding: 16px 16px 10px; }
+.input { width: 100%; height: 44px; border: 0; border-radius: var(--r); background: var(--surface); color: var(--ink);
+  padding: 0 14px; font: 400 15px var(--font); box-shadow: inset 0 0 0 1px var(--line); }
+.input::placeholder { color: #807c76; }
+.input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+textarea.input { height: auto; min-height: 88px; padding: 12px 14px; resize: vertical; line-height: 1.45; }
+.search { position: relative; flex: 1; }
+.search .ic { position: absolute; left: 13px; top: 13px; color: var(--muted); }
+.search .input { padding-left: 40px; }
+
+/* Status select (shadcn Select trigger) */
+.select { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 12px; border-radius: var(--r); border: 0;
+  background: var(--surface); color: var(--ink); font: 500 14px var(--font); box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; }
+.select .ic { color: var(--muted); width: 16px; }
+
+.chips { display: flex; gap: 6px; overflow-x: auto; padding: 0 16px 14px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--surface); color: var(--muted);
+  font: 500 13px var(--font); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
+
+.cards { display: grid; gap: 8px; padding: 0 16px; }
+.card { background: var(--surface); border-radius: var(--r); padding: 14px 10px 14px 14px; display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; cursor: pointer; }
+.card:hover { background: #1e1e1e; }
+.card .t { font: 700 18px/1.25 var(--display); letter-spacing: -0.01em; }
+.card .cats { color: var(--muted); font-size: 13px; }
+.card .n { grid-column: 1 / -1; font-size: 14px; color: #d4d0c9; }
+.card .acts { grid-row: 1 / 3; grid-column: 2; display: flex; gap: 4px; align-items: start; }
+.card .score { color: var(--accent); font: 700 22px/1 var(--display); padding: 6px 6px 0; }
+.card .score small { font: 500 12px var(--font); color: var(--muted); }
+.empty { color: var(--muted); padding: 32px 0; text-align: center; }
+
+.fab { position: absolute; right: 16px; bottom: 28px; z-index: 4; box-shadow: 0 10px 24px -8px rgb(0 0 0 / 0.7); }
+
+/* Detail page */
+.back { padding: 52px 8px 0; display: flex; justify-content: space-between; }
+.detail { padding: 8px 16px 40px; }
+.detail h3 { margin: 6px 0 6px; font: 700 32px/1.05 var(--display); letter-spacing: -0.03em; }
+.detail .cats { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; }
+.sect { border-top: 1px solid var(--line); padding: 18px 0; }
+.label { display: block; color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+.seg { display: flex; gap: 6px; }
+.seg button { flex: 1; height: 40px; border: 0; border-radius: 10px; background: var(--surface); color: var(--muted); font: 500 14px var(--font); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
+.rating { display: flex; align-items: center; gap: 14px; }
+.rating .big { font: 700 44px/1 var(--display); color: var(--accent); letter-spacing: -0.03em; min-width: 64px; }
+.rating .big small { font: 500 15px var(--font); color: var(--muted); }
+.slider { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; background: linear-gradient(var(--accent), var(--accent)) 0 / 77.7% 100% no-repeat, var(--raised); }
+.slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 4px var(--ground); cursor: pointer; }
+.pricefield { display: flex; gap: 8px; }
+.pricefield .input { flex: 1; }
+.hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+.hint.err { color: var(--danger); }
+.paid { display: flex; justify-content: space-between; font-size: 14px; margin-top: 12px; }
+.paid b { color: var(--accent); font-weight: 600; }
+
+.toast { position: absolute; left: 16px; right: 16px; bottom: 28px; z-index: 9; background: var(--ink); color: var(--ground); border-radius: 12px;
+  padding: 13px 14px; display: flex; gap: 10px; align-items: center; font-size: 14px; font-weight: 500; box-shadow: 0 16px 32px -12px #000; }
+.toast .grow { flex: 1; }
+.toast button { border: 0; background: none; font: 600 14px var(--font); color: #7a5a12; cursor: pointer; }
+
+/* Drawer form */
+.scrim { position: absolute; inset: 0; background: rgb(0 0 0 / 0.6); z-index: 6; }
+.drawer { position: absolute; left: 0; right: 0; bottom: 0; top: 64px; z-index: 7; background: var(--surface); border-radius: 22px 22px 0 0;
+  padding: 10px 16px 28px; overflow-y: auto; }
+.grab { width: 40px; height: 5px; background: var(--line-strong); border-radius: 3px; margin: 0 auto 14px; }
+.drawer h3 { margin: 0 0 18px; font: 700 24px/1.1 var(--display); letter-spacing: -0.02em; }
+.drawer .input { background: var(--ground); }
+.f { margin-bottom: 16px; }
+.f .label { color: var(--ink); font-weight: 500; margin-bottom: 8px; }
+.f .opt { color: var(--muted); font-weight: 400; }
+.alert { margin-top: 8px; display: flex; gap: 10px; padding: 11px 12px; border-radius: 10px; background: var(--accent-soft); color: #ffd690; font-size: 13px; }
+.drawer .chips { flex-wrap: wrap; padding: 0; }
+.drawer .chip { background: var(--ground); }
+.drawer .chip[aria-pressed="true"] { background: var(--ink); }
+
+/* Spending */
+.total { padding: 22px 16px 6px; }
+.total .k { color: var(--muted); font-size: 13px; }
+.total .v { font: 700 40px/1.05 var(--display); letter-spacing: -0.03em; color: var(--accent); margin-top: 4px; }
+.bars { display: grid; gap: 8px; padding: 14px 16px 18px; }
+.bar { display: grid; grid-template-columns: 76px 1fr 84px; gap: 10px; align-items: center; font-size: 13px; }
+.bar .d { color: var(--muted); }
+.bar .track { height: 10px; border-radius: 5px; background: var(--raised); overflow: hidden; }
+.bar .fill { height: 100%; background: var(--accent); border-radius: 5px; }
+.bar .v { text-align: right; }
+.ledger { padding: 0 16px; }
+.ledger h4 { margin: 16px 0 6px; font: 500 13px var(--font); color: var(--muted); display: flex; justify-content: space-between; }
+.ledger .e { display: flex; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+.ledger .e .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ledger .e .ic { width: 15px; height: 15px; color: var(--accent); }
+.ledger .e.new { animation: in .9s cubic-bezier(.16,1,.3,1); }
+@keyframes in { from { background: var(--accent-soft); } to { background: transparent; } }
+.composer { position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 16px 30px; background: var(--ground); box-shadow: 0 -1px 0 var(--line); z-index: 4; }
+.composer form { display: flex; gap: 8px; }
+.composer .input { flex: 1; }
+@media (prefers-reduced-motion: reduce) { .ledger .e.new { animation: none; } }
+</style>
+</head>
+<body>
+<header class="board-head">
+  <div>
+    <h1>B · Night market</h1>
+    <p>Dark, for the cold Da Lat evenings and the night market. Bigger type, lantern amber only on ratings and money. Tabs at the top, detail as a full page.</p>
+  </div>
+  <nav><a href="index.html">All directions</a></nav>
+</header>
+<main class="board">
+  <figure class="shot"><figcaption>Trip view: stay, search, status select, places</figcaption><div class="frame app"><div class="screen" id="f1"></div></div></figure>
+  <figure class="shot"><figcaption>Place detail page: rating slider, add expense, toast</figcaption><div class="frame app"><div class="screen" id="f2"></div></div></figure>
+  <figure class="shot"><figcaption>Add place drawer: duplicate warning</figcaption><div class="frame app"><div class="screen" id="f3"></div></div></figure>
+  <figure class="shot"><figcaption>Spending: daily bars, quick entry</figcaption><div class="frame app"><div class="screen" id="f4"></div></div></figure>
+</main>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="shared/data.js"></script>
+<script>
+const state = { cats: new Set(), status: "want", query: "" };
+const LABEL = { want: "Want to go", visited: "Visited", skipped: "Skipped", all: "All" };
+
+const head = (tab) => `
+  <div class="head">
+    <div class="row1"><h2>${TRIP.name}</h2><button class="btn btn-secondary btn-icon" aria-label="Switch trip">${icon("chevrons-up-down")}</button></div>
+    <div class="sub">${TRIP.dates} · ${PLACES.length} places · ${money(total(EXPENSES))} spent</div>
+  </div>
+  <nav class="tabs" role="tablist">${["Places", "Spending", "Stays"].map((t) => `<button role="tab" aria-selected="${t === tab}">${t}</button>`).join("")}</nav>`;
+
+const card = (p) => `
+  <article class="card" data-open="${p.id}">
+    <div class="t">${esc(p.name)}</div>
+    <div class="acts">
+      ${p.rating ? `<span class="score">${p.rating}<small>/10</small></span>` : ""}
+      <a class="btn btn-ghost btn-sm btn-icon" href="#" aria-label="Directions">${icon("navigation")}</a>
+      ${p.source ? `<a class="btn btn-ghost btn-sm btn-icon" href="#" aria-label="TikTok source">${icon("clapperboard")}</a>` : `<span class="btn btn-sm btn-icon" aria-hidden="true"></span>`}
+    </div>
+    <div class="cats">${p.cats.map((c) => SHORT[c]).join(" · ")}</div>
+    ${p.notes ? `<div class="n">${esc(p.notes)}</div>` : ""}
+  </article>`;
+
+function tripView(live) {
+  const list = filterPlaces(PLACES, state);
+  const s = STAYS[0];
+  return `${head("Places")}
+    <section class="stay" aria-label="Staying tonight">
+      <div class="k">Staying tonight</div>
+      <div class="t">${esc(s.name)}</div>
+      <a class="btn btn-secondary btn-sm" href="#">${icon("navigation")}Go</a>
+      <div class="m">Until ${s.checkOut} · ${esc(s.notes.split(" · ")[1])}</div>
+    </section>
+    <div class="tools">
+      <div class="search">${icon("search")}<input class="input" placeholder="Search" value="${esc(state.query)}" ${live ? "data-q" : "tabindex=-1"}></div>
+      <button class="select" data-cycle>${LABEL[state.status]}${icon("chevron-down")}</button>
+    </div>
+    <div class="chips" role="group" aria-label="Categories">${CATEGORIES.map((c) => `<button class="chip" aria-pressed="${state.cats.has(c.id)}" data-cat="${c.id}">${SHORT[c.id]}</button>`).join("")}</div>
+    <div class="cards">${list.length ? list.map(card).join("") : `<div class="empty">Nothing here with these filters.</div>`}</div>
+    <div style="height:100px"></div>
+    <button class="btn btn-primary fab">${icon("plus")}Add place</button>`;
+}
+
+function renderF1() { document.getElementById("f1").innerHTML = tripView(true); lucide.createIcons(); }
+const f1 = document.getElementById("f1");
+f1.addEventListener("click", (e) => {
+  const c = e.target.closest("[data-cat]");
+  if (c) { state.cats.has(c.dataset.cat) ? state.cats.delete(c.dataset.cat) : state.cats.add(c.dataset.cat); renderF1(); }
+  if (e.target.closest("[data-cycle]")) { const o = ["want", "visited", "skipped", "all"]; state.status = o[(o.indexOf(state.status) + 1) % o.length]; renderF1(); }
+});
+f1.addEventListener("input", (e) => {
+  if (!e.target.matches("[data-q]")) return;
+  state.query = e.target.value; const pos = e.target.selectionStart; renderF1();
+  const q = f1.querySelector("[data-q]"); q.focus(); q.setSelectionRange(pos, pos);
+});
+
+function renderF2() {
+  const p = PLACES.find((x) => x.id === "p1");
+  const paid = EXPENSES.filter((e) => e.place === p.id);
+  document.getElementById("f2").innerHTML = `
+    <div class="back"><button class="btn btn-ghost">${icon("chevron-left")}Places</button><button class="btn btn-ghost btn-icon" aria-label="Edit">${icon("pencil")}</button></div>
+    <div class="detail">
+      <h3>${esc(p.name)}</h3>
+      <div class="cats">${p.cats.map((c) => SHORT[c]).join(" · ")}</div>
+      <div class="two"><a class="btn btn-primary" href="#">${icon("navigation")}Directions</a><a class="btn btn-secondary" href="#">${icon("clapperboard")}TikTok</a></div>
+      <div class="sect"><span class="label">Status</span><div class="seg">${["Want", "Visited", "Skipped"].map((s) => `<button aria-pressed="${s === "Visited"}">${s}</button>`).join("")}</div></div>
+      <div class="sect"><span class="label">Your rating</span>
+        <div class="rating"><div class="big" data-rv>${p.rating}<small>/10</small></div><input class="slider" type="range" min="1" max="10" value="${p.rating}" aria-label="Rating" data-r></div></div>
+      <div class="sect"><span class="label">Notes</span><div>${esc(p.notes)}</div></div>
+      <div class="sect"><span class="label">Spent here</span>
+        <form class="pricefield" data-exp><input class="input" placeholder="Price, like 49k" aria-label="Price"><button class="btn btn-secondary">Add</button></form>
+        <div class="hint" data-hint>Price only: 49k, 120000, or 1.5tr</div>
+        ${paid.map((e) => `<div class="paid"><span>${e.day}</span><b>${money(e.amount)}</b></div>`).join("")}
+      </div>
+      <div class="sect"><button class="btn btn-danger" style="padding:0">${icon("trash-2")}Delete place</button></div>
+    </div>
+    <div class="toast" role="status">${icon("circle-check")}<span class="grow">70.000 ₫ added</span><button>Undo</button></div>`;
+  lucide.createIcons();
+  const r = document.querySelector("#f2 [data-r]"), rv = document.querySelector("#f2 [data-rv]");
+  r.addEventListener("input", () => { rv.innerHTML = `${r.value}<small>/10</small>`; r.style.backgroundSize = ((r.value - 1) / 9 * 100) + "% 100%, auto"; });
+  r.style.backgroundSize = ((r.value - 1) / 9 * 100) + "% 100%, auto";
+  const form = document.querySelector("#f2 [data-exp]"), hint = document.querySelector("#f2 [data-hint]"), inp = form.querySelector("input");
+  inp.addEventListener("input", () => { const v = inp.value.trim(); if (!v) { hint.className = "hint"; hint.textContent = "Price only: 49k, 120000, or 1.5tr"; return; }
+    const x = parsePrice(v); hint.className = x.error ? "hint err" : "hint"; hint.textContent = x.error || "Adds " + money(x.amount); });
+  form.addEventListener("submit", (e) => e.preventDefault());
+}
+
+function renderF3() {
+  const picked = new Set(["snack", "night"]);
+  document.getElementById("f3").innerHTML = `${tripView(false)}<div class="scrim"></div>
+    <section class="drawer" role="dialog" aria-label="Add place">
+      <div class="grab"></div>
+      <h3>Add place</h3>
+      <div class="f"><label class="label">Name</label><input class="input" value="Bánh tráng nướng Dì Đinh"></div>
+      <div class="f"><label class="label">Google Maps link</label><input class="input" value="https://maps.app.goo.gl/x7Qe2">
+        <div class="alert">${icon("triangle-alert")}<span>Same link as “Chợ đêm Đà Lạt”. Save anyway if it's a different stall.</span></div></div>
+      <div class="f"><label class="label">TikTok or source <span class="opt">optional</span></label><input class="input" placeholder="Paste a link"></div>
+      <div class="f"><span class="label">Categories</span><div class="chips">${CATEGORIES.map((c) => `<button class="chip" aria-pressed="${picked.has(c.id)}">${SHORT[c.id]}</button>`).join("")}</div></div>
+      <div class="f"><label class="label">Notes <span class="opt">optional</span></label><textarea class="input">Bánh tráng trứng + pate. Opens 3pm.</textarea></div>
+      <button class="btn btn-primary" style="width:100%">Save place</button>
+    </section>`;
+  lucide.createIcons();
+  document.querySelectorAll("#f3 .drawer .chip").forEach((b) => b.addEventListener("click", () => b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true")));
+}
+
+const expenses = EXPENSES.slice(); let fresh = null;
+function renderF4(err = "", keep = "") {
+  const days = byDay(expenses); const max = Math.max(...days.map((d) => d.total));
+  document.getElementById("f4").innerHTML = `${head("Spending")}
+    <div class="total"><div class="k">Total spent</div><div class="v">${money(total(expenses))}</div></div>
+    <div class="bars">${days.map((d) => `<div class="bar"><span class="d">${d.day.split(", ")[1]}</span><span class="track"><span class="fill" style="display:block;width:${d.total / max * 100}%"></span></span><span class="v">${money(d.total)}</span></div>`).join("")}</div>
+    <div class="ledger">${days.slice().reverse().map((d) => `<h4><span>${d.day}</span><span>${d.items.length} items</span></h4>
+      ${d.items.slice().reverse().map((e) => `<div class="e ${e.id === fresh ? "new" : ""}"><span class="grow">${esc(e.name)}</span>${e.place ? icon("map-pin") : ""}<span>${money(e.amount)}</span></div>`).join("")}`).join("")}</div>
+    <div style="height:120px"></div>
+    <div class="composer"><form data-quick><input class="input" placeholder="banh mi 30k" value="${esc(keep)}" aria-label="Quick entry"><button class="btn btn-primary btn-icon" aria-label="Add">${icon("plus")}</button></form>
+      <div class="hint ${err ? "err" : ""}" data-hint>${err || "Name, then price"}</div></div>`;
+  lucide.createIcons();
+  const form = document.querySelector("#f4 [data-quick]"), inp = form.querySelector("input"), hint = document.querySelector("#f4 [data-hint]");
+  inp.addEventListener("input", () => { const v = inp.value.trim(); if (!v) { hint.className = "hint"; hint.textContent = "Name, then price"; return; }
+    const r = parseQuick(v); hint.className = r.error ? "hint err" : "hint"; hint.textContent = r.error || `${r.name} · ${money(r.amount)}`; });
+  form.addEventListener("submit", (e) => { e.preventDefault(); const r = parseQuick(inp.value);
+    if (r.error) return renderF4(r.error, inp.value);
+    fresh = "n" + Date.now(); expenses.push({ id: fresh, day: "Wed, Nov 19", name: r.name, amount: r.amount, place: null }); renderF4(); });
+}
+renderF1(); renderF2(); renderF3(); renderF4();
+</script>
+</body>
+</html>

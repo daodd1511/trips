@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D · Pine and berry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/frames.css">
+<style>
+:root {
+  --pine: #123a2b;
+  --pine-2: #1b4a38;
+  --pine-ink: #e8f2ec;
+  --pine-muted: #a9c6b7;
+  --ground: #ffffff;
+  --sunken: #f2f5f3;
+  --ink: #102019;
+  --muted: #5a6a62;
+  --line: #e3e9e6;
+  --berry: #e8336b;
+  --berry-ink: #ffffff;
+  --berry-soft: #fde6ee;
+  --berry-deep: #a8173f;
+  --font: "Lexend", system-ui, sans-serif;
+}
+body { background: #dfe7e3; color: var(--ink); font-family: var(--font); }
+.board-head p, .shot > figcaption { color: var(--muted); }
+.board-head a { color: var(--berry-deep); }
+.frame { background: var(--ground); box-shadow: 0 24px 48px -24px rgb(18 58 43 / 0.4); }
+::selection { background: var(--berry-soft); color: var(--berry-deep); }
+.app { font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums; }
+.app :focus-visible { outline: 2px solid var(--berry); outline-offset: 2px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 44px; padding: 0 18px; border: 0; border-radius: 999px;
+  font: 500 14px/1 var(--font); cursor: pointer; text-decoration: none; white-space: nowrap; }
+.btn-primary { background: var(--berry); color: var(--berry-ink); }
+.btn-primary:hover { background: #d72a5f; }
+.btn-secondary { background: var(--sunken); color: var(--ink); }
+.btn-secondary:hover { background: #e6ece9; }
+.btn-onpine { background: var(--pine-2); color: var(--pine-ink); }
+.btn-ghost { background: none; color: var(--ink); }
+.btn-icon { width: 44px; padding: 0; }
+.btn-sm { height: 36px; padding: 0 14px; font-size: 13px; }
+.btn-sm.btn-icon { width: 36px; }
+
+/* Pine header */
+.hero { background: var(--pine); color: var(--pine-ink); padding: 54px 16px 18px; border-radius: 0 0 28px 28px; }
+.hero .row1 { display: flex; justify-content: space-between; align-items: center; }
+.hero h2 { margin: 0; font: 700 30px/1.05 var(--font); letter-spacing: -0.03em; }
+.hero .sub { color: var(--pine-muted); font-size: 13px; margin-top: 4px; }
+.stayline { margin-top: 16px; display: flex; align-items: center; gap: 12px; background: var(--pine-2); border-radius: 18px; padding: 10px 10px 10px 14px; }
+.stayline .grow { flex: 1; min-width: 0; }
+.stayline .t { font-weight: 500; }
+.stayline .m { color: var(--pine-muted); font-size: 12px; }
+.stayline .btn { background: var(--pine-ink); color: var(--pine); }
+
+/* Category tiles */
+.tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 16px 16px 6px; }
+.tile { border: 0; background: var(--sunken); border-radius: 16px; padding: 10px 2px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font: 500 11px var(--font); color: var(--ink); cursor: pointer; }
+.tile .ic { width: 20px; height: 20px; color: var(--pine); }
+.tile .c { font-size: 10px; color: var(--muted); }
+.tile[aria-pressed="true"] { background: var(--pine); color: var(--pine-ink); }
+.tile[aria-pressed="true"] .ic, .tile[aria-pressed="true"] .c { color: var(--pine-muted); }
+
+.toolbar { display: flex; gap: 8px; align-items: center; padding: 10px 16px 8px; }
+.input { width: 100%; height: 44px; border: 0; border-radius: 999px; background: var(--sunken); padding: 0 16px; font: 400 15px var(--font); color: var(--ink); }
+.input::placeholder { color: #75837c; }
+.input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--pine); background: #fff; }
+textarea.input { border-radius: 18px; height: auto; min-height: 84px; padding: 12px 16px; resize: vertical; line-height: 1.45; }
+.search { position: relative; flex: 1; }
+.search .ic { position: absolute; left: 14px; top: 13px; color: var(--muted); }
+.search .input { padding-left: 42px; }
+
+/* Switch (shadcn Switch) */
+.switch { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.sw { width: 40px; height: 24px; border-radius: 12px; background: #cfd8d3; position: relative; border: 0; cursor: pointer; padding: 0; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s cubic-bezier(.16,1,.3,1); box-shadow: 0 1px 2px rgb(0 0 0 / 0.2); }
+.sw[aria-checked="true"] { background: var(--pine); }
+.sw[aria-checked="true"]::after { transform: translateX(16px); }
+
+.list { padding: 0 16px; }
+.item { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.item .dot { width: 44px; height: 44px; border-radius: 14px; background: var(--sunken); display: grid; place-items: center; flex: none; }
+.item .dot .ic { color: var(--pine); }
+.item.visited .dot { background: var(--pine); }
+.item.visited .dot .ic { color: var(--pine-ink); }
+.item .grow { flex: 1; min-width: 0; }
+.item .t { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item .m { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item .score { font-weight: 600; color: var(--berry-deep); font-size: 14px; }
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+
+.nav { position: absolute; left: 16px; right: 16px; bottom: 22px; height: 64px; z-index: 5; background: var(--pine); border-radius: 999px; display: flex; align-items: center; justify-content: space-around; padding: 0 8px;
+  box-shadow: 0 12px 28px -10px rgb(18 58 43 / 0.55); }
+.nav button { border: 0; background: none; color: var(--pine-muted); display: flex; flex-direction: column; align-items: center; gap: 2px; font: 500 10px var(--font); cursor: pointer; width: 64px; }
+.nav button[aria-current="page"] { color: #fff; }
+.nav .add { width: 48px; height: 48px; border-radius: 50%; background: var(--berry); color: #fff; justify-content: center; }
+.nav .add .ic { width: 22px; height: 22px; }
+
+/* Drawer detail */
+.scrim { position: absolute; inset: 0; background: rgb(16 32 25 / 0.45); z-index: 6; }
+.drawer { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 7; background: #fff; border-radius: 28px; padding: 10px 18px 22px; max-height: 88%; overflow-y: auto; }
+.grab { width: 40px; height: 5px; border-radius: 3px; background: #d5ddd9; margin: 0 auto 14px; }
+.drawer h3 { margin: 0; font: 600 22px/1.2 var(--font); letter-spacing: -0.02em; }
+.badges { display: flex; gap: 6px; margin: 8px 0 16px; flex-wrap: wrap; }
+.badge { background: var(--sunken); border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--muted); }
+.acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+.lbl { font-size: 13px; color: var(--muted); margin: 0 0 8px; display: block; }
+.blk { margin-bottom: 18px; }
+.pills { display: flex; gap: 6px; }
+.pills button { flex: 1; height: 40px; border: 0; border-radius: 999px; background: var(--sunken); font: 500 13px var(--font); color: var(--ink); cursor: pointer; }
+.pills button[aria-pressed="true"] { background: var(--pine); color: #fff; }
+.dots10 { display: flex; justify-content: space-between; }
+.dots10 button { width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--sunken); font: 500 12px var(--font); color: var(--muted); cursor: pointer; }
+.dots10 button.on { background: var(--berry-soft); color: var(--berry-deep); }
+.dots10 button[aria-pressed="true"] { background: var(--berry); color: #fff; }
+.quickamts { display: flex; gap: 6px; margin-top: 8px; }
+.quickamts button { flex: 1; height: 34px; border: 0; border-radius: 999px; background: var(--berry-soft); color: var(--berry-deep); font: 500 13px var(--font); cursor: pointer; }
+.pf { display: flex; gap: 8px; }
+.pf .input { flex: 1; }
+.hint { font-size: 12px; color: var(--muted); margin-top: 6px; padding-left: 4px; }
+.hint.err { color: var(--berry-deep); }
+.toast { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); z-index: 9; background: var(--ink); color: #fff; border-radius: 999px; padding: 10px 16px; font-size: 13px; display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+.toast .ic { color: #ff8fb0; width: 16px; }
+
+/* Form */
+.fhead { background: var(--pine); color: var(--pine-ink); padding: 52px 8px 14px; display: flex; justify-content: space-between; align-items: center; }
+.fhead h2 { margin: 0; font: 600 17px var(--font); }
+.fhead .btn-ghost { color: var(--pine-ink); }
+.form { padding: 18px 16px 32px; display: grid; gap: 16px; }
+.form .lbl { color: var(--ink); font-weight: 500; }
+.form .lbl .o { color: var(--muted); font-weight: 400; }
+.alert { margin-top: 8px; background: var(--berry-soft); color: var(--berry-deep); border-radius: 16px; padding: 10px 14px; font-size: 13px; display: flex; gap: 8px; }
+.picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.picks button { height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--sunken); font: 500 13px var(--font); color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.picks button[aria-pressed="true"] { background: var(--pine); color: #fff; }
+.picks .ic { width: 15px; height: 15px; }
+
+/* Spending */
+.money { background: var(--pine); color: var(--pine-ink); padding: 54px 16px 20px; border-radius: 0 0 28px 28px; }
+.money .k { color: var(--pine-muted); font-size: 13px; }
+.money .v { font: 700 38px/1.1 var(--font); letter-spacing: -0.03em; margin-top: 2px; }
+.money .days { display: flex; gap: 8px; margin-top: 14px; }
+.money .days div { flex: 1; background: var(--pine-2); border-radius: 16px; padding: 10px 12px; }
+.money .days span { display: block; color: var(--pine-muted); font-size: 12px; }
+.money .days b { font-weight: 600; }
+.ex { padding: 6px 16px 0; }
+.ex h4 { margin: 16px 0 4px; font: 500 13px var(--font); color: var(--muted); }
+.ex .e { display: flex; gap: 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.ex .e .grow { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ex .e .ic { width: 15px; height: 15px; color: var(--berry); }
+.ex .e b { font-weight: 500; }
+.ex .e.new { animation: pop .9s cubic-bezier(.16,1,.3,1); }
+@keyframes pop { from { background: var(--berry-soft); } to { background: transparent; } }
+.qe { position: absolute; left: 16px; right: 16px; bottom: 96px; z-index: 5; }
+.qe form { display: flex; gap: 8px; background: #fff; border-radius: 999px; padding: 6px; box-shadow: 0 10px 28px -10px rgb(16 32 25 / 0.35), 0 0 0 1px var(--line); }
+.qe .input { flex: 1; height: 40px; background: none; }
+.qe .input:focus { box-shadow: none; }
+.qe .btn { height: 40px; }
+.qe .hint { background: #fff; display: inline-block; border-radius: 999px; padding: 2px 10px; margin-top: 6px; }
+@media (prefers-reduced-motion: reduce) { .ex .e.new { animation: none; } .sw::after { transition: none; } }
+</style>
+</head>
+<body>
+<header class="board-head">
+  <div>
+    <h1>D · Pine and berry</h1>
+    <p>Da Lat pine forest with a strawberry accent. Friendly and thumb-first: category tiles, round controls, a floating bar with a central add button.</p>
+  </div>
+  <nav><a href="index.html">All directions</a></nav>
+</header>
+<main class="board">
+  <figure class="shot"><figcaption>Trip view: category tiles, switch, list</figcaption><div class="frame app"><div class="screen" id="f1"></div></div></figure>
+  <figure class="shot"><figcaption>Place detail: floating drawer, quick amounts</figcaption><div class="frame app"><div class="screen" id="f2"></div></div></figure>
+  <figure class="shot"><figcaption>Add place: icon category picks</figcaption><div class="frame app"><div class="screen" id="f3"></div></div></figure>
+  <figure class="shot"><figcaption>Spending: day totals, floating quick entry</figcaption><div class="frame app"><div class="screen" id="f4"></div></div></figure>
+</main>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="shared/data.js"></script>
+<script>
+const ICON = { breakfast: "egg-fried", lunch: "soup", dinner: "utensils", snack: "sandwich", cafe: "coffee", dessert: "ice-cream-cone", gift: "gift", sight: "mountain", night: "lamp", other: "circle-dashed" };
+const state = { cats: new Set(), showVisited: false, query: "" };
+const visible = () => PLACES.filter((p) => p.status !== "skipped" && (state.showVisited || p.status === "want")
+  && (!state.cats.size || p.cats.some((c) => state.cats.has(c)))
+  && (!state.query || (p.name + " " + p.notes).toLowerCase().includes(state.query.toLowerCase())));
+
+const nav = (cur) => `<nav class="nav">
+  <button ${cur === "Places" ? 'aria-current="page"' : ""}>${icon("map-pin")}Places</button>
+  <button ${cur === "Stays" ? 'aria-current="page"' : ""}>${icon("bed-double")}Stays</button>
+  <button class="add" aria-label="Add">${icon("plus")}</button>
+  <button ${cur === "Spending" ? 'aria-current="page"' : ""}>${icon("wallet")}Spending</button>
+  <button>${icon("settings-2")}Trip</button></nav>`;
+
+function tripView(live) {
+  const s = STAYS[0];
+  const list = visible();
+  return `
+    <section class="hero">
+      <div class="row1"><div><h2>${TRIP.name}</h2><div class="sub">${TRIP.dates} · ${PLACES.filter((p) => p.status === "want").length} places to go</div></div>
+        <button class="btn btn-onpine btn-sm btn-icon" aria-label="Switch trip">${icon("arrow-left-right")}</button></div>
+      <div class="stayline">${icon("bed-double")}<div class="grow"><div class="t">${esc(s.name)}</div><div class="m">Until ${s.checkOut} · door 4471</div></div><a class="btn btn-sm" href="#">${icon("navigation")}Go</a></div>
+    </section>
+    <div class="tiles" role="group" aria-label="Categories">${CATEGORIES.map((c) => `<button class="tile" aria-pressed="${state.cats.has(c.id)}" data-cat="${c.id}">${icon(ICON[c.id])}${SHORT[c.id].replace("Night market", "Night")}<span class="c">${PLACES.filter((p) => p.cats.includes(c.id)).length}</span></button>`).join("")}</div>
+    <div class="toolbar"><div class="search">${icon("search")}<input class="input" placeholder="Search" value="${esc(state.query)}" ${live ? "data-q" : "tabindex=-1"}></div>
+      <label class="switch">Visited <button class="sw" role="switch" aria-checked="${state.showVisited}" data-sw aria-label="Show visited"></button></label></div>
+    <div class="list">${list.length ? list.map((p) => `
+      <div class="item ${p.status}"><div class="dot">${icon(p.status === "visited" ? "check" : ICON[p.cats[0]])}</div>
+        <div class="grow"><div class="t">${esc(p.name)}</div><div class="m">${p.cats.map((c) => SHORT[c]).join(" · ")}${p.notes ? " · " + esc(p.notes) : ""}</div></div>
+        ${p.rating ? `<span class="score">${p.rating}/10</span>` : ""}
+        <a class="btn btn-ghost btn-sm btn-icon" href="#" aria-label="Directions">${icon("navigation")}</a></div>`).join("") : `<div class="empty">Nothing left here. Nice.</div>`}</div>
+    <div style="height:110px"></div>${nav("Places")}`;
+}
+function renderF1() { document.getElementById("f1").innerHTML = tripView(true); lucide.createIcons(); }
+const f1 = document.getElementById("f1");
+f1.addEventListener("click", (e) => {
+  const c = e.target.closest("[data-cat]");
+  if (c) { state.cats.has(c.dataset.cat) ? state.cats.delete(c.dataset.cat) : state.cats.add(c.dataset.cat); renderF1(); }
+  if (e.target.closest("[data-sw]")) { state.showVisited = !state.showVisited; renderF1(); }
+});
+f1.addEventListener("input", (e) => {
+  if (!e.target.matches("[data-q]")) return;
+  state.query = e.target.value; const pos = e.target.selectionStart; renderF1();
+  const q = f1.querySelector("[data-q]"); q.focus(); q.setSelectionRange(pos, pos);
+});
+
+function renderF2() {
+  const p = PLACES.find((x) => x.id === "p2");
+  document.getElementById("f2").innerHTML = `${tripView(false)}<div class="scrim"></div>
+    <div class="toast" role="status">${icon("heart")}Marked visited · 49.000 ₫</div>
+    <section class="drawer" role="dialog" aria-label="${esc(p.name)}">
+      <div class="grab"></div>
+      <h3>${esc(p.name)}</h3>
+      <div class="badges">${p.cats.map((c) => `<span class="badge">${SHORT[c]}</span>`).join("")}</div>
+      <div class="acts"><a class="btn btn-primary" href="#">${icon("navigation")}Directions</a><a class="btn btn-secondary" href="#">${icon("clapperboard")}TikTok</a></div>
+      <div class="blk"><span class="lbl">Status</span><div class="pills">${["Want", "Visited", "Skipped"].map((s) => `<button aria-pressed="${s === "Visited"}">${s}</button>`).join("")}</div></div>
+      <div class="blk"><span class="lbl">Your rating</span><div class="dots10" data-rate>${[1,2,3,4,5,6,7,8,9,10].map((n) => `<button class="${n < p.rating ? "on" : ""}" aria-pressed="${n === p.rating}" data-n="${n}">${n}</button>`).join("")}</div></div>
+      <div class="blk"><span class="lbl">Notes</span>${esc(p.notes)}</div>
+      <div class="blk" style="margin:0"><span class="lbl">Spent here · ${money(49000)} so far</span>
+        <form class="pf" data-exp><input class="input" placeholder="Price, like 49k" aria-label="Price"><button class="btn btn-primary">Add</button></form>
+        <div class="quickamts">${[20000, 30000, 50000, 100000].map((a) => `<button data-amt="${a}">+${moneyShort(a)}</button>`).join("")}</div>
+        <div class="hint" data-hint>Tap an amount or type one</div></div>
+    </section>`;
+  lucide.createIcons();
+  const rate = document.querySelector("#f2 [data-rate]");
+  rate.addEventListener("click", (e) => { const b = e.target.closest("[data-n]"); if (!b) return; const n = +b.dataset.n;
+    rate.querySelectorAll("button").forEach((x) => { x.setAttribute("aria-pressed", +x.dataset.n === n); x.className = +x.dataset.n < n ? "on" : ""; }); });
+  const form = document.querySelector("#f2 [data-exp]"), hint = document.querySelector("#f2 [data-hint]"), inp = form.querySelector("input");
+  const check = () => { const v = inp.value.trim(); if (!v) { hint.className = "hint"; hint.textContent = "Tap an amount or type one"; return; }
+    const x = parsePrice(v); hint.className = x.error ? "hint err" : "hint"; hint.textContent = x.error || "Adds " + money(x.amount); };
+  inp.addEventListener("input", check);
+  document.querySelectorAll("#f2 [data-amt]").forEach((b) => b.addEventListener("click", () => { inp.value = moneyShort(+b.dataset.amt); check(); }));
+  form.addEventListener("submit", (e) => e.preventDefault());
+}
+
+function renderF3() {
+  const picked = new Set(["snack", "night"]);
+  document.getElementById("f3").innerHTML = `
+    <div class="fhead"><button class="btn btn-ghost">Cancel</button><h2>New place</h2><button class="btn btn-primary btn-sm">Save</button></div>
+    <div class="form">
+      <div><label class="lbl">Name</label><input class="input" value="Bánh tráng nướng Dì Đinh"></div>
+      <div><label class="lbl">Google Maps link</label><input class="input" value="https://maps.app.goo.gl/x7Qe2">
+        <div class="alert">${icon("triangle-alert")}<span>“Chợ đêm Đà Lạt” has the same link. You can still save.</span></div></div>
+      <div><label class="lbl">TikTok link <span class="o">optional</span></label><input class="input" placeholder="Paste from TikTok"></div>
+      <div><span class="lbl">Categories</span><div class="picks">${CATEGORIES.map((c) => `<button aria-pressed="${picked.has(c.id)}">${icon(ICON[c.id])}${SHORT[c.id]}</button>`).join("")}</div></div>
+      <div><label class="lbl">Notes <span class="o">optional</span></label><textarea class="input">Bánh tráng trứng + pate. Opens 3pm.</textarea></div>
+    </div>`;
+  lucide.createIcons();
+  document.querySelectorAll("#f3 .picks button").forEach((b) => b.addEventListener("click", () => b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true")));
+}
+
+const expenses = EXPENSES.slice(); let fresh = null;
+function renderF4(err = "", keep = "") {
+  const days = byDay(expenses);
+  document.getElementById("f4").innerHTML = `
+    <section class="money"><div class="k">Spent in ${TRIP.name}</div><div class="v">${money(total(expenses))}</div>
+      <div class="days">${days.map((d) => `<div><span>${d.day.split(", ")[1]}</span><b>${moneyShort(d.total)}</b></div>`).join("")}</div></section>
+    <div class="ex">${days.slice().reverse().map((d) => `<h4>${d.day}</h4>${d.items.slice().reverse().map((e) => `
+      <div class="e ${e.id === fresh ? "new" : ""}"><span class="grow">${esc(e.name)}</span>${e.place ? icon("map-pin") : ""}<b>${money(e.amount)}</b></div>`).join("")}`).join("")}</div>
+    <div style="height:190px"></div>
+    <div class="qe"><form data-quick><input class="input" placeholder="banh mi 30k" value="${esc(keep)}" aria-label="Quick entry"><button class="btn btn-primary">Add</button></form>
+      <div class="hint ${err ? "err" : ""}" data-hint>${err || "Name, then price"}</div></div>
+    ${nav("Spending")}`;
+  lucide.createIcons();
+  const form = document.querySelector("#f4 [data-quick]"), inp = form.querySelector("input"), hint = document.querySelector("#f4 [data-hint]");
+  inp.addEventListener("input", () => { const v = inp.value.trim(); if (!v) { hint.className = "hint"; hint.textContent = "Name, then price"; return; }
+    const r = parseQuick(v); hint.className = r.error ? "hint err" : "hint"; hint.textContent = r.error || `${r.name} · ${money(r.amount)}`; });
+  form.addEventListener("submit", (e) => { e.preventDefault(); const r = parseQuick(inp.value);
+    if (r.error) return renderF4(r.error, inp.value);
+    fresh = "n" + Date.now(); expenses.push({ id: fresh, day: "Wed, Nov 19", name: r.name, amount: r.amount, place: null }); renderF4(); });
+}
+renderF1(); renderF2(); renderF3(); renderF4();
+</script>
+</body>
+</html>

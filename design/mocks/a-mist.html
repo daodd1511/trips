@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A · Mist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/frames.css">
+<style>
+:root {
+  --ground: #e9eeeb;
+  --surface: #ffffff;
+  --sunken: #f3f6f4;
+  --ink: #12241d;
+  --muted: #56665f;
+  --line: #e1e7e4;
+  --line-strong: #cdd6d1;
+  --accent: #1d5a45;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcebe3;
+  --accent-soft-ink: #164735;
+  --warn-soft: #fbf0d9;
+  --warn-ink: #6e4600;
+  --danger: #a3322a;
+  --scrim: rgb(18 36 29 / 0.38);
+  --r-card: 14px;
+  --r-ctl: 10px;
+  --font: "Be Vietnam Pro", system-ui, sans-serif;
+}
+body { background: #d9e0dc; color: var(--ink); font-family: var(--font); }
+.board-head p, .shot > figcaption { color: var(--muted); }
+.board-head a { color: var(--accent); }
+.frame { background: var(--ground); box-shadow: 0 24px 48px -24px rgb(18 36 29 / 0.35); }
+::selection { background: var(--accent-soft); color: var(--accent-soft-ink); }
+
+.app { font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums; }
+.app :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pad { padding: 0 16px; }
+
+/* Header */
+.top { display: flex; align-items: flex-end; justify-content: space-between; padding: 56px 16px 12px; }
+.top h2 { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+.top .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+/* Buttons (shadcn Button variants) */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 40px; padding: 0 14px;
+  border-radius: var(--r-ctl); border: 0; font: 500 14px/1 var(--font); cursor: pointer; white-space: nowrap; text-decoration: none; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { background: #174a39; }
+.btn-outline { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.btn-outline:hover { background: var(--sunken); }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn-ghost:hover { background: var(--sunken); }
+.btn-danger { background: transparent; color: var(--danger); }
+.btn-icon { width: 40px; padding: 0; }
+.btn-sm { height: 32px; padding: 0 10px; font-size: 13px; }
+.btn-sm.btn-icon { width: 32px; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+/* Stays */
+.stays { margin: 4px 16px 16px; background: var(--surface); border-radius: var(--r-card); }
+.stay { display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; }
+.stay + .stay { border-top: 1px solid var(--line); }
+.stay .bed { width: 36px; height: 36px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-soft-ink);
+  display: grid; place-items: center; }
+.stay .t { font-weight: 500; }
+.stay .m { color: var(--muted); font-size: 13px; }
+.stay .grow { flex: 1; min-width: 0; }
+
+/* Search (shadcn Input) */
+.search { position: relative; margin: 0 16px 10px; }
+.search .ic { position: absolute; left: 12px; top: 11px; color: var(--muted); }
+.input { width: 100%; height: 40px; border-radius: var(--r-ctl); border: 0; background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-strong); padding: 0 12px; font: 400 15px var(--font); color: var(--ink); }
+.input::placeholder { color: #7b8a83; }
+.input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+.search .input { padding-left: 38px; }
+textarea.input { height: auto; min-height: 84px; padding: 10px 12px; resize: vertical; line-height: 1.45; }
+
+/* Chips (shadcn Toggle, multi) */
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 10px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; height: 32px; padding: 0 12px; border-radius: 999px; border: 0; background: var(--surface);
+  color: var(--ink); font: 500 13px var(--font); box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
+
+/* Segmented (shadcn ToggleGroup single) */
+.seg { display: flex; background: #dde4e0; padding: 3px; border-radius: 12px; margin: 0 16px 12px; }
+.seg button { flex: 1; height: 34px; border: 0; background: transparent; border-radius: 9px; font: 500 13px var(--font);
+  color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(18 36 29 / 0.08); }
+.seg .n { color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+/* Place list */
+.list { margin: 0 16px; background: var(--surface); border-radius: var(--r-card); }
+.row { display: flex; align-items: center; gap: 10px; padding: 12px 8px 12px 14px; cursor: pointer; }
+.row + .row { border-top: 1px solid var(--line); }
+.row .grow { flex: 1; min-width: 0; }
+.row .t { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .m { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .acts { display: flex; gap: 2px; }
+.score { font-size: 13px; font-weight: 600; color: var(--accent-soft-ink); background: var(--accent-soft); border-radius: 6px; padding: 2px 6px; }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+
+/* Tab bar (shadcn Tabs) */
+.tabbar { position: absolute; left: 0; right: 0; bottom: 0; height: 84px; padding: 8px 24px 28px; display: flex;
+  background: var(--surface); box-shadow: 0 -1px 0 var(--line); z-index: 5; }
+.tabbar button { flex: 1; border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font: 500 11px var(--font); color: var(--muted); cursor: pointer; }
+.tabbar button[aria-current="page"] { color: var(--ink); }
+.tabbar button[aria-current="page"] .ic { color: var(--accent); }
+.spacer { height: 104px; }
+
+/* Sheet (shadcn Drawer) */
+.scrim { position: absolute; inset: 0; background: var(--scrim); z-index: 6; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 86%; overflow-y: auto; z-index: 7;
+  background: var(--surface); border-radius: 22px 22px 0 0; padding: 8px 16px 32px;
+  box-shadow: 0 -12px 32px -12px rgb(18 36 29 / 0.3); }
+.grab { width: 40px; height: 5px; border-radius: 3px; background: var(--line-strong); margin: 0 auto 16px; }
+.sheet h3 { margin: 0 0 8px; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.badge { font-size: 12px; font-weight: 500; padding: 3px 8px; border-radius: 999px; background: var(--sunken); color: var(--muted); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.label { font-size: 13px; font-weight: 500; color: var(--muted); margin: 0 0 8px; display: block; }
+.block { margin-bottom: 20px; }
+.sheet .seg { margin: 0; }
+.rate { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+.rate button { height: 36px; border: 0; border-radius: 8px; background: var(--sunken); font: 500 14px var(--font); color: var(--ink); cursor: pointer; }
+.rate button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.note { background: var(--sunken); border-radius: var(--r-ctl); padding: 10px 12px; }
+.addexp { display: flex; gap: 8px; }
+.addexp .input { flex: 1; }
+.hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.hint.err { color: var(--danger); }
+.paid { margin-top: 10px; }
+.paid div { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+.paid div + div { border-top: 1px solid var(--line); }
+.paid .d { color: var(--muted); }
+.foot { display: flex; justify-content: space-between; margin-top: 8px; }
+
+/* Toast (shadcn Sonner) */
+.toast { position: absolute; left: 16px; right: 16px; top: 52px; z-index: 9; background: var(--ink); color: #fff;
+  border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; font-size: 14px;
+  box-shadow: 0 12px 24px -10px rgb(0 0 0 / 0.4); }
+.toast .ic { color: #9fd6bf; }
+
+/* Form */
+.bar { display: flex; align-items: center; justify-content: space-between; padding: 52px 8px 8px; }
+.bar h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.form { padding: 8px 16px 32px; display: grid; gap: 18px; }
+.field .label { color: var(--ink); }
+.field .opt { color: var(--muted); font-weight: 400; }
+.alert { display: flex; gap: 10px; background: var(--warn-soft); color: var(--warn-ink); border-radius: var(--r-ctl);
+  padding: 10px 12px; font-size: 13px; margin-top: 8px; }
+.alert .ic { margin-top: 1px; }
+.form .chips { padding: 0; flex-wrap: wrap; overflow: visible; }
+
+/* Spending */
+.sum { margin: 4px 16px 16px; background: var(--surface); border-radius: var(--r-card); padding: 16px; }
+.sum .big { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+.sum .m { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.day { margin: 0 16px 14px; }
+.day .list { margin: 0; }
+.day-h { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); padding: 0 4px 6px; }
+.day-h b { color: var(--ink); font-weight: 600; }
+.erow { display: flex; align-items: center; gap: 8px; padding: 11px 14px; }
+.erow + .erow { border-top: 1px solid var(--line); }
+.erow .grow { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.erow .ic { width: 15px; height: 15px; color: var(--accent); }
+.erow .amt { text-align: right; }
+.erow.new { animation: flash 1.2s cubic-bezier(.16,1,.3,1); }
+@keyframes flash { from { background: var(--accent-soft); } to { background: transparent; } }
+.composer { position: absolute; left: 0; right: 0; bottom: 84px; z-index: 5; padding: 10px 16px; background: var(--ground);
+  box-shadow: 0 -1px 0 var(--line); }
+.composer form { display: flex; gap: 8px; }
+.composer .input { flex: 1; }
+@media (prefers-reduced-motion: reduce) { .erow.new { animation: none; } }
+</style>
+</head>
+<body>
+<header class="board-head">
+  <div>
+    <h1>A · Mist</h1>
+    <p>Cool highland light. Quiet, list-first, built for checking on the street in daylight. Pine green marks only data and the one primary action.</p>
+  </div>
+  <nav><a href="index.html">All directions</a></nav>
+</header>
+<main class="board">
+  <figure class="shot"><figcaption>Trip view: stays, search, filters, places</figcaption><div class="frame app"><div class="screen" id="f1"></div></div></figure>
+  <figure class="shot"><figcaption>Place detail: status, rating, add expense</figcaption><div class="frame app"><div class="screen" id="f2"></div></div></figure>
+  <figure class="shot"><figcaption>Add place: form and duplicate warning</figcaption><div class="frame app"><div class="screen" id="f3"></div></div></figure>
+  <figure class="shot"><figcaption>Spending: quick entry and daily totals</figcaption><div class="frame app"><div class="screen" id="f4"></div></div></figure>
+</main>
+
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="shared/data.js"></script>
+<script>
+const state = { cats: new Set(), status: "want", query: "" };
+const counts = (s) => PLACES.filter((p) => p.status === s).length;
+
+const tabbar = (active) => `
+  <nav class="tabbar" aria-label="Sections">
+    ${[["Places", "map-pin"], ["Spending", "wallet"], ["Trip", "luggage"]].map(([t, i]) =>
+      `<button ${t === active ? 'aria-current="page"' : ""}>${icon(i)}${t}</button>`).join("")}
+  </nav>`;
+
+const placeRow = (p) => `
+  <div class="row" data-open="${p.id}">
+    <div class="grow">
+      <div class="t">${esc(p.name)}</div>
+      <div class="m">${p.cats.map((c) => SHORT[c]).join(", ")}${p.notes ? " · " + esc(p.notes) : ""}</div>
+    </div>
+    ${p.rating ? `<span class="score">${p.rating}/10</span>` : ""}
+    <div class="acts">
+      <a class="btn btn-ghost btn-icon" href="#" aria-label="Open in Google Maps">${icon("navigation")}</a>
+      ${p.source ? `<a class="btn btn-ghost btn-icon" href="#" aria-label="Open TikTok source">${icon("clapperboard")}</a>` : `<span class="btn btn-icon" aria-hidden="true"></span>`}
+    </div>
+  </div>`;
+
+function tripView(interactive) {
+  const list = filterPlaces(PLACES, state);
+  return `
+    <div class="top">
+      <div><h2>${TRIP.name}</h2><div class="sub">${TRIP.dates} · ${PLACES.length} places</div></div>
+      <button class="btn btn-primary">${icon("plus")}Place</button>
+    </div>
+    <section class="stays" aria-label="Where you stay">
+      ${STAYS.map((s) => `
+        <div class="stay">
+          <div class="bed">${icon("bed-double")}</div>
+          <div class="grow"><div class="t">${esc(s.name)}</div><div class="m">${s.checkIn} → ${s.checkOut} · ${s.nights} night${s.nights > 1 ? "s" : ""}</div></div>
+          <a class="btn btn-outline btn-sm btn-icon" href="#" aria-label="Directions">${icon("navigation")}</a>
+        </div>`).join("")}
+    </section>
+    <div class="search">${icon("search")}<input class="input" placeholder="Search places and notes" value="${esc(state.query)}" ${interactive ? 'data-q' : "tabindex=-1"}></div>
+    <div class="chips" role="group" aria-label="Categories">
+      ${CATEGORIES.map((c) => `<button class="chip" aria-pressed="${state.cats.has(c.id)}" data-cat="${c.id}">${SHORT[c.id]}</button>`).join("")}
+    </div>
+    <div class="seg" role="group" aria-label="Status">
+      ${[["want", "Want"], ["visited", "Visited"], ["skipped", "Skipped"]].map(([k, l]) =>
+        `<button aria-pressed="${state.status === k}" data-status="${k}">${l}<span class="n">${counts(k)}</span></button>`).join("")}
+    </div>
+    <div class="list">${list.length ? list.map(placeRow).join("") : `<div class="empty">No places match these filters.</div>`}</div>
+    <div class="spacer"></div>
+    ${tabbar("Places")}`;
+}
+
+function renderF1() {
+  const el = document.getElementById("f1");
+  el.innerHTML = tripView(true);
+  lucide.createIcons();
+}
+document.getElementById("f1").addEventListener("click", (e) => {
+  const cat = e.target.closest("[data-cat]");
+  const st = e.target.closest("[data-status]");
+  if (cat) { state.cats.has(cat.dataset.cat) ? state.cats.delete(cat.dataset.cat) : state.cats.add(cat.dataset.cat); renderF1(); }
+  if (st) { state.status = st.dataset.status; renderF1(); }
+});
+document.getElementById("f1").addEventListener("input", (e) => {
+  if (e.target.matches("[data-q]")) {
+    state.query = e.target.value;
+    const pos = e.target.selectionStart;
+    renderF1();
+    const q = document.querySelector("#f1 [data-q]"); q.focus(); q.setSelectionRange(pos, pos);
+  }
+});
+
+function renderF2() {
+  const p = PLACES.find((x) => x.id === "p2");
+  const paid = EXPENSES.filter((e) => e.place === p.id);
+  document.getElementById("f2").innerHTML = `
+    ${tripView(false)}
+    <div class="scrim"></div>
+    <div class="toast" role="status">${icon("circle-check")}Added 49.000 ₫ · marked visited</div>
+    <section class="sheet" role="dialog" aria-label="${esc(p.name)}">
+      <div class="grab"></div>
+      <h3>${esc(p.name)}</h3>
+      <div class="badges">${p.cats.map((c) => `<span class="badge">${SHORT[c]}</span>`).join("")}</div>
+      <div class="two">
+        <a class="btn btn-primary" href="#">${icon("navigation")}Directions</a>
+        <a class="btn btn-outline" href="#">${icon("clapperboard")}TikTok</a>
+      </div>
+      <div class="block"><span class="label">Status</span>
+        <div class="seg">${["Want", "Visited", "Skipped"].map((s) => `<button aria-pressed="${s === "Visited"}">${s}</button>`).join("")}</div>
+      </div>
+      <div class="block"><span class="label">Your rating</span>
+        <div class="rate" role="group" aria-label="Rating">${[1,2,3,4,5,6,7,8,9,10].map((n) => `<button aria-pressed="${n === p.rating}">${n}</button>`).join("")}</div>
+      </div>
+      <div class="block"><span class="label">Notes</span><div class="note">${esc(p.notes)}</div></div>
+      <div class="block"><span class="label">Spent here</span>
+        <form class="addexp" data-exp><input class="input" inputmode="text" placeholder="49k" aria-label="Price"><button class="btn btn-outline">Add</button></form>
+        <div class="hint" data-hint>Price only: 49k, 120000, or 1.5tr</div>
+        <div class="paid">${paid.map((e) => `<div><span class="d">${e.day}</span><span>${money(e.amount)}</span></div>`).join("")}</div>
+      </div>
+      <div class="foot"><button class="btn btn-ghost">${icon("pencil")}Edit</button><button class="btn btn-danger">${icon("trash-2")}Delete</button></div>
+    </section>`;
+  lucide.createIcons();
+  wirePrice(document.querySelector("#f2 [data-exp]"), document.querySelector("#f2 [data-hint]"));
+}
+
+function wirePrice(form, hint) {
+  const input = form.querySelector("input");
+  input.addEventListener("input", () => {
+    const v = input.value.trim();
+    if (!v) { hint.className = "hint"; hint.textContent = "Price only: 49k, 120000, or 1.5tr"; return; }
+    const r = parsePrice(v);
+    hint.className = r.error ? "hint err" : "hint";
+    hint.textContent = r.error || "Adds " + money(r.amount);
+  });
+  form.addEventListener("submit", (e) => e.preventDefault());
+}
+
+function renderF3() {
+  const picked = new Set(["snack", "night"]);
+  document.getElementById("f3").innerHTML = `
+    <div class="bar"><button class="btn btn-ghost">Cancel</button><h2>New place</h2><button class="btn btn-primary btn-sm">Save</button></div>
+    <div class="form">
+      <div class="field"><label class="label" for="n">Name</label><input id="n" class="input" value="Bánh tráng nướng Dì Đinh"></div>
+      <div class="field"><label class="label" for="g">Google Maps link</label><input id="g" class="input" value="https://maps.app.goo.gl/x7Qe2">
+        <div class="alert" role="alert">${icon("triangle-alert")}<span>“Chợ đêm Đà Lạt” already uses this link. You can still save.</span></div></div>
+      <div class="field"><label class="label" for="s">TikTok or source link <span class="opt">(optional)</span></label><input id="s" class="input" placeholder="https://www.tiktok.com/…"></div>
+      <div class="field"><span class="label">Categories</span>
+        <div class="chips" role="group" aria-label="Categories">${CATEGORIES.map((c) => `<button class="chip" aria-pressed="${picked.has(c.id)}">${SHORT[c.id]}</button>`).join("")}</div></div>
+      <div class="field"><label class="label" for="t">Notes <span class="opt">(optional)</span></label><textarea id="t" class="input">Bánh tráng trứng + pate. Stall opens 3pm.</textarea></div>
+    </div>`;
+  lucide.createIcons();
+  document.querySelectorAll("#f3 .chip").forEach((b) => b.addEventListener("click", () => b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true")));
+}
+
+const expenses = EXPENSES.slice();
+let fresh = null;
+function renderF4(errorText = "") {
+  document.getElementById("f4").innerHTML = `
+    <div class="top"><div><h2>Spending</h2><div class="sub">${TRIP.name} · ${TRIP.currency}</div></div></div>
+    <section class="sum"><div class="big">${money(total(expenses))}</div><div class="m">${expenses.length} expenses over ${byDay(expenses).length} days</div></section>
+    ${byDay(expenses).slice().reverse().map((d) => `
+      <section class="day">
+        <div class="day-h"><span>${d.day}</span><b>${money(d.total)}</b></div>
+        <div class="list">${d.items.slice().reverse().map((e) => `
+          <div class="erow ${e.id === fresh ? "new" : ""}">
+            <span class="grow">${esc(e.name)}</span>
+            ${e.place ? `<span aria-label="Saved place">${icon("map-pin")}</span>` : ""}
+            <span class="amt">${money(e.amount)}</span>
+          </div>`).join("")}</div>
+      </section>`).join("")}
+    <div style="height:176px"></div>
+    <div class="composer">
+      <form data-quick><input class="input" placeholder="banh mi 30k" aria-label="Quick entry"><button class="btn btn-primary btn-icon" aria-label="Add expense">${icon("arrow-up")}</button></form>
+      <div class="hint ${errorText ? "err" : ""}" data-hint>${errorText || "Name, then price: kem bơ 49k"}</div>
+    </div>
+    ${tabbar("Spending")}`;
+  lucide.createIcons();
+  const form = document.querySelector("#f4 [data-quick]");
+  const input = form.querySelector("input");
+  const hint = document.querySelector("#f4 [data-hint]");
+  input.addEventListener("input", () => {
+    const v = input.value.trim();
+    if (!v) { hint.className = "hint"; hint.textContent = "Name, then price: kem bơ 49k"; return; }
+    const r = parseQuick(v);
+    hint.className = r.error ? "hint err" : "hint";
+    hint.textContent = r.error || `${r.name} · ${money(r.amount)}`;
+  });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const r = parseQuick(input.value);
+    if (r.error) { renderF4(r.error); document.querySelector("#f4 [data-quick] input").value = input.value; return; }
+    fresh = "n" + Date.now();
+    expenses.push({ id: fresh, day: "Wed, Nov 19", name: r.name, amount: r.amount, place: null });
+    renderF4();
+  });
+}
+
+renderF1(); renderF2(); renderF3(); renderF4();
+</script>
+</body>
+</html>
