@@ -7,10 +7,13 @@ export const client = hc<AppType>("/", { init: { credentials: "same-origin" } })
 /** A non-2xx response, with the server's `{ error }` message. */
 export class ApiError extends Error {
   readonly status: number;
+  /** The parsed error body, for extra fields such as `remaining`. */
+  readonly body: unknown;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, body: unknown = null) {
     super(message);
     this.status = status;
+    this.body = body;
   }
 }
 
@@ -24,13 +27,14 @@ export async function unwrap<R extends JsonResponse>(response: Promise<R>): Prom
   const res = await response;
   if (res.ok) return (await res.json()) as SuccessBody<R>;
   let message = "Something went wrong";
+  let body: unknown = null;
   try {
-    const body: unknown = await res.json();
+    body = await res.json();
     if (body && typeof body === "object" && "error" in body && typeof body.error === "string") {
       message = body.error;
     }
   } catch {
     // Non-JSON error body: keep the generic message.
   }
-  throw new ApiError(res.status, message);
+  throw new ApiError(res.status, message, body);
 }
