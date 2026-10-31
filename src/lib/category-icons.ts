@@ -31,8 +31,10 @@ export function categoryIcon(name: string): LucideIcon {
   return ICONS[name.normalize("NFC").toLowerCase()] ?? Tag;
 }
 
-/** Short label for tiles: the part before ` / `, and "Night" for Night market. */
+/** Short label for tiles: the part before ` / `, with short forms for the longest seeded names. */
 export function categoryShortName(name: string): string {
-  if (name.toLowerCase() === "night market") return "Night";
+  const key = name.toLowerCase();
+  if (key === "night market") return "Night";
+  if (key === "sightseeing") return "Sights";
   return name.split(" / ")[0] ?? name;
 }

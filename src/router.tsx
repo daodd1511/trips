@@ -1,18 +1,22 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import { AppShell, PlainShell, RequireAuth } from "@/components/layout/AppShell";
+import { FullScreenMessage } from "@/components/layout/FullScreenMessage";
 import { RouteError } from "@/components/layout/RouteError";
 import { LoginPage } from "@/pages/LoginPage";
 import { WelcomePage } from "@/pages/WelcomePage";
+
+const Hydrating = () => <FullScreenMessage title="Loading…" />;
 
 const page = <K extends string>(load: () => Promise<Record<K, React.ComponentType>>, name: K) => ({
   lazy: { Component: async () => (await load())[name] },
 });
 
 export const router = createBrowserRouter([
-  { path: "/login", Component: LoginPage, ErrorBoundary: RouteError },
+  { path: "/login", Component: LoginPage, ErrorBoundary: RouteError, HydrateFallback: Hydrating },
   {
     Component: RequireAuth,
     ErrorBoundary: RouteError,
+    HydrateFallback: Hydrating,
     children: [
       // Previews its own palette, so it sits outside the shells that set the trip palette.
       { path: "/welcome", Component: WelcomePage },
