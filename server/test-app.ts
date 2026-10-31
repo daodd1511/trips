@@ -22,10 +22,17 @@ export async function testApp() {
     return { status: res.status, body: (await res.json()) as T };
   }
 
+  /** Sends `body` verbatim, signed in unless `signedIn` is false. */
+  async function raw(method: string, path: string, body?: string, signedIn = true): Promise<Response> {
+    const headers: Record<string, string> = { "content-type": "application/json" };
+    if (signedIn) headers.cookie = cookie;
+    return app.request(path, { method, headers, body });
+  }
+
   const category = (name: string) =>
     (db.query("SELECT id FROM categories WHERE name = ?").get(name) as { id: number }).id;
 
-  return { db, call, category };
+  return { db, call, raw, category };
 }
 
 export const MAPS = "https://maps.app.goo.gl/abc";

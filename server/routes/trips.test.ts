@@ -57,3 +57,24 @@ test("setting an unknown active trip is 404", async () => {
   const { call } = await testApp();
   expect((await call("PUT", "/api/active-trip", { tripId: 99 })).status).toBe(404);
 });
+
+test("malformed JSON is a 400, on login and on domain routes", async () => {
+  const { raw } = await testApp();
+  expect((await raw("POST", "/api/login", "{bad", false)).status).toBe(400);
+  const res = await raw("POST", "/api/trips", "{bad");
+  expect(res.status).toBe(400);
+  expect(await res.json()).toHaveProperty("error");
+});
+
+test("domain routes need a session", async () => {
+  const { raw } = await testApp();
+  expect((await raw("GET", "/api/trips", undefined, false)).status).toBe(401);
+  expect((await raw("GET", "/api/categories", undefined, false)).status).toBe(401);
+});
+
+test("a trip patch keeps omitted fields", async () => {
+  const { call } = await testApp();
+  const trip = (await call<TripSummary>("POST", "/api/trips", { name: "Đà Lạt", currency: "VND", theme: "lantern" })).body;
+  const res = await call<TripSummary>("PATCH", `/api/trips/${trip.id}`, { name: "Dalat" });
+  expect(res.body).toMatchObject({ name: "Dalat", currency: "VND", theme: "lantern" });
+});

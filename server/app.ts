@@ -1,5 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { validator } from "hono/validator";
 import { z } from "zod";
@@ -60,6 +61,7 @@ export function createApp({
   return new Hono()
     .onError((err, c) => {
       if (err instanceof HttpError) return c.json({ error: err.message }, err.status);
+      if (err instanceof HTTPException) return c.json({ error: err.message }, err.status);
       console.error(err);
       return c.json({ error: "Something went wrong" }, 500);
     })
