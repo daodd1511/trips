@@ -129,8 +129,9 @@ SQLite, one file. Foreign keys enabled.
 - The trip view shows stays above the place list, unaffected by place filters.
 - Stays sort by `check_in`, then by `created_at` for stays without dates.
 - If a stay's notes contain a phone number, the stay shows a **Call host** button that
-  opens a `tel:` link to the first number found. A phone number is a run of 9 to 11
-  digits, optionally starting with `+` and separated by spaces, dots, or hyphens.
+  opens a `tel:` link to the first number found. A phone number is exactly 10 digits
+  starting with `0`, with no separators, such as `0358937727`. Any other form shows no
+  button: the app never guesses which digits belong together.
 - Delete is a hard delete.
 
 ### Expenses
