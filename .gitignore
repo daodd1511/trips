@@ -24,7 +24,7 @@ dist-ssr
 *.sw?
 
 # Local SQLite data
-data/
+/data/
 *.db
 *.db-wal
 *.db-shm
