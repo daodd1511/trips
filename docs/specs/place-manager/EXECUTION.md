@@ -1,8 +1,9 @@
 # Place manager — Execution Plan
 
 Spec: [PLAN.md](PLAN.md), UI: [DESIGN.md](DESIGN.md). Rulebook: `docs/specs/RULEBOOK.md`.
-Integration branch: `main`. Branch model: sequential — `no GitHub remote yet (user links the
-repo later); re-probe gh stack once origin exists`.
+Integration branch: `main`. Branch model: sequential, merged locally — no GitHub remote until the deploy
+phase (user decision): each phase fast-forwards `main` locally instead of push + PR; re-probe
+gh stack once origin exists.
 
 Layout (single package): `src/` web (Vite root), `server/` Bun + Hono, `shared/` code both
 import. Tests: `bun test`, backend and shared only — no frontend tests, by user decision.
