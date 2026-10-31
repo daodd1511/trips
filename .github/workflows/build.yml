@@ -1,0 +1,78 @@
+name: build
+
+# Public repo. Push-to-main only, and no self-hosted runner is registered here — a
+# fork PR must never be able to execute on the deploy server. Deployment lives in the
+# private daodd1511/deploy repo, notified by the dispatch job at the bottom.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+# Queue rather than cancel: a cancelled publish could leave `latest` pointing at an
+# image whose sha tag was never dispatched.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.21
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # No build-args: APP_PASSWORD is runtime container env, injected by compose from
+      # the server's .env. It must never reach the image.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  dispatch-deploy:
+    needs: build
+    # Upstream only. Forks publish to their own GHCR namespace but must not reach
+    # the deploy repo.
+    if: github.repository == 'daodd1511/trips'
+    runs-on: ubuntu-latest
+    # The image is the artifact; this is only a notification. Without the token the
+    # pipeline runs publish-only and the run stays green.
+    continue-on-error: true
+    steps:
+      - name: Trigger deploy
+        env:
+          GH_TOKEN: ${{ secrets.DEPLOY_TRIGGER_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "DEPLOY_TRIGGER_TOKEN not set — publish-only mode, skipping dispatch."
+            exit 0
+          fi
+          gh api repos/daodd1511/deploy/dispatches \
+            -f event_type=deploy \
+            -f 'client_payload[app]=trips' \
+            -f 'client_payload[tag]=${{ github.sha }}'
