@@ -64,3 +64,10 @@ test("editing keeps the place link; invalid amounts are rejected", async () => {
   expect((await call("PATCH", `/api/expenses/${expense.id}`, { amount: 1.5 })).status).toBe(400);
   expect((await call("PATCH", `/api/expenses/${expense.id}`, { amount: 0 })).status).toBe(400);
 });
+
+test("an expense patch keeps omitted fields", async () => {
+  const { call, trip } = await withPlace();
+  const e = (await call<Expense>("POST", `/api/trips/${trip.id}/expenses`, { name: "Taxi", amount: 250000, spentOn: "2026-11-18" })).body;
+  const res = await call<Expense>("PATCH", `/api/expenses/${e.id}`, { name: "Taxi sân bay" });
+  expect(res.body).toMatchObject({ name: "Taxi sân bay", amount: 250000, spentOn: "2026-11-18" });
+});

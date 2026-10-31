@@ -72,3 +72,10 @@ test("filters by status, categories (OR), and accent-insensitive search", async 
   expect(await names("?q=sau%20rieng")).toEqual(["Kem bơ"]);
   expect((await call("GET", `${base}?status=gone`)).status).toBe(400);
 });
+
+test("a place patch keeps omitted links and notes", async () => {
+  const { add, call } = await withTrip();
+  const place = (await add({ name: "Kem bơ", sourceUrl: "https://www.tiktok.com/@x/video/1", notes: "sầu riêng" })).body.place;
+  const res = await call<PlaceSaveResult>("PATCH", `/api/places/${place.id}`, { name: "Kem bơ Thanh Thảo" });
+  expect(res.body.place).toMatchObject({ mapsUrl: MAPS, sourceUrl: "https://www.tiktok.com/@x/video/1", notes: "sầu riêng", status: "want" });
+});

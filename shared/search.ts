@@ -1,6 +1,6 @@
 /**
- * Folds text for search: NFC, lowercase, Vietnamese tone and vowel marks removed, and
- * đ mapped to d, so "banh can" matches "Bánh căn".
+ * Folds text for search: decomposed, combining marks (Vietnamese tones and vowel marks)
+ * removed, đ mapped to d, and lowercased, so "banh can" matches "Bánh căn".
  */
 export function searchKey(text: string): string {
   return text
