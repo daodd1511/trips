@@ -11,12 +11,12 @@ import. Tests: `bun test`, backend and shared only — no frontend tests, by use
 
 ## STATUS
 
-- Current phase: 5 — in-progress
+- Current phase: 6 — pending (stopped before deploy, per user)
 - Phase 1 — Backend foundation: done (gate passed; fresh review: 4 P2 fixed, re-review P1 resolved by user decision on phone format, final fix not re-reviewed)
 - Phase 2 — Domain API: done (gate passed; fresh review: 1 P2 fixed, re-review clean)
 - Phase 3 — Export and import: done (gate passed; fresh review: 2 P2 fixed, re-review clean)
 - Phase 4 — Frontend foundation: done (gate passed; fresh review not required)
-- Phase 5 — Frontend screens: in-progress
+- Phase 5 — Frontend screens: done (gate passed; fresh review not required; screens verified in Chrome at 390×844)
 - Phase 6 — Deploy: pending
 - Verification debt: none
 
@@ -154,21 +154,25 @@ Consumes: `api`, query hooks from `src/lib/queries.ts`, `AppShell`, `MainHeader`
 
 Fresh review: not required
 
-- [ ] `src/pages/PlacesPage.tsx`: header with current stay line, category tiles, search, status filter with counts, place list
-- [ ] `src/components/places/PlaceDrawer.tsx`: links, status, rating 1–10, notes, spent-here with price field and quick amounts, toast on add
-- [ ] `src/pages/PlaceFormPage.tsx`: create/edit, category picks, `duplicateOf` alert
-- [ ] `src/pages/SpendingPage.tsx`: totals block, list by day, floating quick entry with live `parseQuickEntry` feedback
-- [ ] `src/pages/StaysPage.tsx` + `src/components/stays/StayDrawer.tsx`: current stay first, Call host via `findPhoneNumber`, date validation
-- [ ] `src/pages/TripsPage.tsx`: switch, create, export all (download), import (file input → `POST /api/import`, toast with result)
-- [ ] `src/pages/TripSettingsPage.tsx`: name, currency (locked with reason), palette picker, export this trip, delete with typed-name `AlertDialog`
-- [ ] `src/pages/CategoriesPage.tsx`: add, rename, delete `AlertDialog` showing the counts that move to Other; Other locked
-- [ ] Empty, loading, and error states for each list per DESIGN.md
+- [x] `src/pages/PlacesPage.tsx`: header with current stay line, category tiles, search, status filter with counts, place list
+- [x] `src/components/places/PlaceDrawer.tsx`: links, status, rating 1–10, notes, spent-here with price field and quick amounts, toast on add
+- [x] `src/pages/PlaceFormPage.tsx`: create/edit, category picks, `duplicateOf` alert
+- [x] `src/pages/SpendingPage.tsx`: totals block, list by day, floating quick entry with live `parseQuickEntry` feedback
+- [x] `src/pages/StaysPage.tsx` + `src/components/stays/StayDrawer.tsx`: current stay first, Call host via `findPhoneNumber`, date validation
+- [x] `src/pages/TripsPage.tsx`: switch, create, export all (download), import (file input → `POST /api/import`, toast with result)
+- [x] `src/pages/TripSettingsPage.tsx`: name, currency (locked with reason), palette picker, export this trip, delete with typed-name `AlertDialog`
+- [x] `src/pages/CategoriesPage.tsx`: add, rename, delete `AlertDialog` showing the counts that move to Other; Other locked
+- [x] Empty, loading, and error states for each list per DESIGN.md
 
 - [x] (amended 2026-11-01) `.gitignore`: anchor `/data/` so `src/components/data/ImportButton.tsx` (phase 4) is tracked; fixed forward
 
+- [x] (amended 2026-11-01) `src/router.tsx`: `HydrateFallback` on root routes so lazy pages show a loading screen instead of a blank first paint
+- [x] (amended 2026-11-01) `src/components/ui/alert-dialog.tsx`: left-aligned header, no footer band, design scrim and radius
+- [x] (amended 2026-11-01) `src/components/theme/use-trip-theme.ts`: `restoreTo` replaces the unmount reset, so a settings preview restores the trip palette instead of the default
+
 **Phase gate (hard):**
-- [ ] `bun run typecheck`
-- [ ] No test item: no frontend tests, by user decision
+- [x] `bun run typecheck`
+- [x] No test item: no frontend tests, by user decision
 
 **On completion:** run the phase gate; run `fresh-review` when the recorded or actual-diff
 decision requires it; update STATUS + checkboxes; stop and ask before push/PR.
