@@ -35,7 +35,7 @@ function exportTrip(db: Database, trip: TripRow): ExportTrip {
     .all(trip.id);
   const categoryNames = db.query<{ name: string }, [number]>(
     `SELECT c.name FROM place_categories pc JOIN categories c ON c.id = pc.category_id
-     WHERE pc.place_id = ? ORDER BY c.is_system, c.id`,
+     WHERE pc.place_id = ? ORDER BY c.is_system, c.name_key`,
   );
   const refOf = new Map(places.map((p, i) => [p.id, i + 1]));
 

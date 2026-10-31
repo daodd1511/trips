@@ -38,13 +38,22 @@ export function importFile(db: Database, file: ExportFile, today: string): Impor
   })();
 }
 
+const TRIP_NAME_MAX = 200;
+
+/** `name` cut to fit before `suffix` within the trip name limit, counted in code points. */
+function withSuffix(name: string, suffix: string): string {
+  const room = TRIP_NAME_MAX - Array.from(suffix).length;
+  return Array.from(name).slice(0, room).join("").trimEnd() + suffix;
+}
+
 function freeTripName(db: Database, name: string, today: string): string {
   const taken = (n: string) => db.query("SELECT 1 FROM trips WHERE name = ?").get(n) !== null;
   if (!taken(name)) return name;
-  const base = `${name} (imported ${today})`;
+  const suffix = ` (imported ${today})`;
+  const base = withSuffix(name, suffix);
   if (!taken(base)) return base;
   for (let i = 2; ; i++) {
-    const candidate = `${base} ${i}`;
+    const candidate = withSuffix(name, `${suffix} ${i}`);
     if (!taken(candidate)) return candidate;
   }
 }

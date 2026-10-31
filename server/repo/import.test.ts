@@ -144,3 +144,34 @@ test("an import body over 5 MB is rejected", async () => {
   expect(res.status).toBe(400);
   expect(await res.json()).toEqual({ error: "The file is larger than 5 MB" });
 });
+
+test("round trip is stable with custom categories used out of id order", async () => {
+  const source = await testApp();
+  const trip = (await source.call<TripSummary>("POST", "/api/trips", { name: "T", currency: "VND" })).body;
+  const x = (await source.call<{ id: number }>("POST", "/api/categories", { name: "Xcat" })).body.id;
+  const y = (await source.call<{ id: number }>("POST", "/api/categories", { name: "Ycat" })).body.id;
+  await source.call("POST", `/api/trips/${trip.id}/places`, { name: "p1", mapsUrl: MAPS, categoryIds: [y] });
+  await source.call("POST", `/api/trips/${trip.id}/places`, { name: "p2", mapsUrl: MAPS, categoryIds: [x, y] });
+  const file = await exportAll(source.call);
+
+  const target = await testApp();
+  await target.call("POST", "/api/import", file);
+  expect((await exportAll(target.call)).trips).toEqual(file.trips);
+});
+
+test("a clashing name at the length limit is cut to fit the suffix", async () => {
+  const t = await testApp();
+  const long = "a".repeat(200);
+  await t.call("POST", "/api/trips", { name: long, currency: "VND" });
+  const file = await exportAll(t.call);
+  const first = await t.call<{ trips: { name: string }[] }>("POST", "/api/import", file);
+  const second = await t.call<{ trips: { name: string }[] }>("POST", "/api/import", file);
+  expect(first.status).toBe(201);
+  expect(second.status).toBe(201);
+  const a = first.body.trips[0]?.name ?? "";
+  const b = second.body.trips[0]?.name ?? "";
+  expect(Array.from(a)).toHaveLength(200);
+  expect(a.endsWith(" (imported 2026-11-19)")).toBe(true);
+  expect(b.endsWith(" (imported 2026-11-19) 2")).toBe(true);
+  expect(Array.from(b).length).toBeLessThanOrEqual(200);
+});
