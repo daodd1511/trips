@@ -164,6 +164,8 @@ Fresh review: not required
 - [ ] `src/pages/CategoriesPage.tsx`: add, rename, delete `AlertDialog` showing the counts that move to Other; Other locked
 - [ ] Empty, loading, and error states for each list per DESIGN.md
 
+- [x] (amended 2026-11-01) `.gitignore`: anchor `/data/` so `src/components/data/ImportButton.tsx` (phase 4) is tracked; fixed forward
+
 **Phase gate (hard):**
 - [ ] `bun run typecheck`
 - [ ] No test item: no frontend tests, by user decision
