@@ -80,5 +80,4 @@ INSERT INTO categories (name, name_key, is_system) VALUES
   ('Gift / souvenir', 'gift / souvenir', 0),
   ('Sightseeing', 'sightseeing', 0),
   ('Night market', 'night market', 0),
-  ('Stay', 'stay', 0),
   ('Other', 'other', 1);

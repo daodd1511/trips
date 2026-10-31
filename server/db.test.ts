@@ -89,3 +89,20 @@ test("categoryKey matches composed and decomposed Vietnamese", () => {
   expect(categoryKey("Cà phê")).toBe(categoryKey("Cà phê".normalize("NFD")));
   expect(categoryKey(" CÀ PHÊ ")).toBe(categoryKey("cà phê"));
 });
+
+test("seeds the default categories in order, with Other last and no Stay", () => {
+  const names = (db: ReturnType<typeof fresh>) =>
+    (db.query("SELECT name FROM categories ORDER BY id").all() as { name: string }[]).map((r) => r.name);
+  expect(names(fresh())).toEqual([
+    "Breakfast",
+    "Lunch",
+    "Dinner",
+    "Snack / street food",
+    "Café / drinks",
+    "Dessert",
+    "Gift / souvenir",
+    "Sightseeing",
+    "Night market",
+    "Other",
+  ]);
+});

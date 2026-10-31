@@ -101,7 +101,8 @@ SQLite, one file. Foreign keys enabled.
 - Categories are global and shared across all trips.
 - The user can add, rename, and delete categories.
 - Seeded defaults: Breakfast, Lunch, Dinner, Snack / street food, Café / drinks,
-  Dessert, Gift / souvenir, Sightseeing, Night market, Stay.
+  Dessert, Gift / souvenir, Sightseeing, Night market. Stays have their own
+  section, so there is no Stay category.
 - **Other** is a system category (`is_system = 1`). The app seeds it on first start.
   The user cannot delete or rename it. It is the default for a new place.
 - Deleting a category removes it from every place in one transaction. A place whose
