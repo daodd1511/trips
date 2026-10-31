@@ -1,9 +1,8 @@
 # Place manager — Execution Plan
 
 Spec: [PLAN.md](PLAN.md), UI: [DESIGN.md](DESIGN.md). Rulebook: `docs/specs/RULEBOOK.md`.
-Integration branch: `main`. Branch model: sequential, merged locally — no GitHub remote until the deploy
-phase (user decision): each phase fast-forwards `main` locally instead of push + PR; re-probe
-gh stack once origin exists. User authorized phases 3–5 to run, merge, and start the next phase without
+Integration branch: `main`. Branch model: sequential. Phases 1–5 merged locally before the remote existed; phase 6 goes
+through a PR against `main`. User authorized phases 3–5 to run, merge, and start the next phase without
 per-phase approval; stop before phase 6.
 
 Layout (single package): `src/` web (Vite root), `server/` Bun + Hono, `shared/` code both
@@ -11,13 +10,13 @@ import. Tests: `bun test`, backend and shared only — no frontend tests, by use
 
 ## STATUS
 
-- Current phase: 6 — pending (stopped before deploy, per user)
+- Current phase: 6 — done
 - Phase 1 — Backend foundation: done (gate passed; fresh review: 4 P2 fixed, re-review P1 resolved by user decision on phone format, final fix not re-reviewed)
 - Phase 2 — Domain API: done (gate passed; fresh review: 1 P2 fixed, re-review clean)
 - Phase 3 — Export and import: done (gate passed; fresh review: 2 P2 fixed, re-review clean)
 - Phase 4 — Frontend foundation: done (gate passed; fresh review not required)
 - Phase 5 — Frontend screens: done (gate passed; fresh review not required; screens verified in Chrome at 390×844)
-- Phase 6 — Deploy: pending
+- Phase 6 — Deploy: done (gate and spec gate passed; fresh review: 1 P2 fixed, re-review clean)
 - Verification debt: none
 
 ## Phase 1 — Backend foundation
@@ -187,20 +186,27 @@ Consumes: `server/index.ts` env contract (`APP_PASSWORD`, `DATA_DIR`, `PORT`), `
 
 Fresh review: required — secrets handling and CI/deploy infrastructure
 
-- [ ] `Dockerfile`: multi-stage `oven/bun`; build web, run `server/index.ts` as non-root; `DATA_DIR=/data`, `PORT=3000`
-- [ ] `.dockerignore`
-- [ ] `.github/workflows/build.yml` per PLAN.md → "Deploy" (copied from moviev2: GHCR `:sha` + `:latest`, dispatch `client_payload[app]=trips`)
-- [ ] In `daodd1511/deploy`: `apps/trips/compose.yml`, `apps/trips/deploy.conf`, `apps/trips/.env.example` per PLAN.md → "Deploy" (separate repo — separate branch and PR there)
+- [x] `Dockerfile`: multi-stage `oven/bun`; build web, run `server/index.ts` as non-root; `DATA_DIR=/data`, `PORT=3000`
+- [x] `.dockerignore`
+- [x] `.github/workflows/build.yml` per PLAN.md → "Deploy" (copied from moviev2: GHCR `:sha` + `:latest`, dispatch `client_payload[app]=trips`)
+- [x] In `daodd1511/deploy`: `apps/trips/compose.yml`, `apps/trips/deploy.conf`, `apps/trips/.env.example` per PLAN.md → "Deploy" (separate repo — branch `add-trips-app` off `origin/main`, commit `d191302`)
+
+- [x] (amended 2026-11-01) `package.json`: only `hono` and `zod` stay in `dependencies`; frontend packages move to `devDependencies` so the runtime image installs just the server's needs
+- [x] (amended 2026-11-01) `Dockerfile`: runtime runs `server/index.ts` from source; bundling the server with `bun build` breaks `hono/bun`'s `serveStatic` (verified)
+- [x] (amended 2026-11-01) `.github/workflows/build.yml`: a `test` job (typecheck + `bun test`) gates the image build
+- [x] (amended 2026-11-01) deploy repo `README.md`: list `trips` among the apps on the pipeline; `deploy.conf` sets `AUTO_ROLLBACK=true` explicitly
+
+- [x] (amended 2026-11-01) `server/index.ts`: handle SIGTERM and SIGINT (stop the server, close the database, exit) so `docker stop` is graceful as PID 1; `.dockerignore` excludes `.env*`
 
 **Phase gate (hard):**
-- [ ] `bun run typecheck`
-- [ ] `bun test server shared` (fallback, as phase 1)
+- [x] `bun run typecheck`
+- [x] `bun test server shared` (fallback, as phase 1)
 
 **On completion:** run the phase gate; run `fresh-review` when the recorded or actual-diff
 decision requires it; update STATUS + checkboxes; stop and ask before push/PR.
 
 ## Spec gate (hard — once, before the final phase's PR)
 
-- [ ] `bun test`
-- [ ] `bun run build`
-- [ ] `docker build -t trips:spec-gate .` (environment-blocked if Docker is not running locally → `[~]` with substitute evidence)
+- [x] `bun test` (102 pass, 0 fail)
+- [x] `bun run build`
+- [x] `docker build -t trips:spec-gate .` (built; container served `/health/ready`, the SPA, 401 without a session, login, and wrote the database to the mounted volume as uid 1000)
