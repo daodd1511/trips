@@ -112,3 +112,64 @@ export type Expense = {
   spentOn: string;
   createdAt: string;
 };
+
+/** A trip with figures for lists and headers. Dates derive from its stays. */
+export type TripSummary = Trip & {
+  placeCount: number;
+  wantCount: number;
+  /** Sum of the trip's expenses, in its currency's main unit. */
+  spent: number;
+  /** Earliest stay check-in, or null when no stay has dates. */
+  startDate: string | null;
+  /** Latest stay check-out, or null when no stay has dates. */
+  endDate: string | null;
+};
+
+/** A place with the sum of expenses linked to it. */
+export type PlaceView = Place & { spent: number };
+
+/** A category with the number of places that use it in the requested scope. */
+export type CategoryView = Category & { placeCount: number };
+
+export type ExpenseDay = { date: string; total: number; count: number };
+
+export type ExpenseList = {
+  /** Newest first. */
+  items: Expense[];
+  total: number;
+  /** One entry per `spentOn` date, newest first. */
+  days: ExpenseDay[];
+};
+
+// Patch schemas carry no defaults: Zod applies `.default()` even inside `.partial()`,
+// which would reset omitted fields on update.
+
+export const tripPatch = z
+  .object({ name, currency: tripInput.shape.currency, theme: z.enum(THEME_KEYS) })
+  .partial();
+export type TripPatch = z.infer<typeof tripPatch>;
+
+export const placePatch = z
+  .object({
+    name,
+    mapsUrl: url,
+    sourceUrl: url.nullable(),
+    notes: notes.nullable(),
+    status: z.enum(PLACE_STATUSES),
+    rating: z.number().int().min(1).max(10).nullable(),
+    categoryIds: z.array(id),
+  })
+  .partial();
+export type PlacePatch = z.infer<typeof placePatch>;
+
+export const stayPatch = z
+  .object({ name, mapsUrl: url.nullable(), checkIn: date.nullable(), checkOut: date.nullable(), notes: notes.nullable() })
+  .partial();
+export type StayPatch = z.infer<typeof stayPatch>;
+
+export const expensePatch = z.object({ name, amount: expenseInput.shape.amount, spentOn: date }).partial();
+export type ExpensePatch = z.infer<typeof expensePatch>;
+
+/** Body for adding an expense from a place: the price as typed, such as `49k`. */
+export const placeExpenseInput = z.object({ price: z.string().trim().min(1).max(40), spentOn: date.optional() });
+export type PlaceExpenseInput = z.infer<typeof placeExpenseInput>;
