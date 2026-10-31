@@ -20,14 +20,15 @@ export function parsePrice(token: string): ParseResult<number> {
 
   const multiplier = suffix ? MULTIPLIER[suffix.toLowerCase() as keyof typeof MULTIPLIER] : 1;
   const digits = fraction ?? "";
-  const scale = 10 ** digits.length;
-  const scaled = (Number(whole) * scale + Number(digits || "0")) * multiplier;
-  if (scaled % scale !== 0) return { ok: false, error: "The price must be a whole number" };
+  // BigInt keeps long fractions exact; doubles would round 1.0000000000000001k to 1000.
+  const scale = 10n ** BigInt(digits.length);
+  const scaled = (BigInt(whole) * scale + BigInt(digits || "0")) * BigInt(multiplier);
+  if (scaled % scale !== 0n) return { ok: false, error: "The price must be a whole number" };
 
   const amount = scaled / scale;
-  if (!Number.isSafeInteger(amount)) return { ok: false, error: "The price is too large" };
-  if (amount <= 0) return { ok: false, error: "The price must be more than 0" };
-  return { ok: true, value: amount };
+  if (amount > BigInt(Number.MAX_SAFE_INTEGER)) return { ok: false, error: "The price is too large" };
+  if (amount <= 0n) return { ok: false, error: "The price must be more than 0" };
+  return { ok: true, value: Number(amount) };
 }
 
 /**

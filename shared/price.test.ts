@@ -43,3 +43,14 @@ describe("parsePrice", () => {
     expect(parsePrice("99999999999999999tr").ok).toBe(false);
   });
 });
+
+test.each([["1.0000000000000001k"], ["1.00000000000000001k"], ["1.0000000000000001tr"], ["1.0001k"]])(
+  "%p is rejected instead of rounded",
+  (token) => {
+    expect(parsePrice(token).ok).toBe(false);
+  },
+);
+
+test("keeps exact values with a long but whole fraction", () => {
+  expect(parsePrice("1.500000tr")).toEqual({ ok: true, value: 1_500_000 });
+});
