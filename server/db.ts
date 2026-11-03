@@ -39,6 +39,9 @@ export function migrate(db: Database, dir: string = MIGRATIONS_DIR): void {
   for (const file of pending) {
     const sql = readFileSync(join(dir, file), "utf8");
     db.exec("PRAGMA foreign_keys = OFF");
+    // The pragma is a no-op inside an open transaction; a rebuild would then cascade.
+    const fk = db.query<{ foreign_keys: number }, []>("PRAGMA foreign_keys").get();
+    if (fk?.foreign_keys !== 0) throw new Error(`Cannot run ${file}: foreign keys could not be turned off`);
     try {
       db.transaction(() => {
         db.exec(sql);

@@ -8,9 +8,14 @@ export const NOTES_MAX = 2000;
 export const ADDRESS_MAX = 300;
 
 const name = z.string().trim().min(1).max(200);
-const url = z.url().max(2000);
+/** An http or https link; other schemes, such as `javascript:`, are rejected. */
+export const url = z.url({ protocol: /^https?$/ }).max(2000);
 const notes = z.string().trim().max(NOTES_MAX);
-const address = z.string().trim().min(1).max(ADDRESS_MAX);
+/** One line of text: line breaks and runs of whitespace collapse to single spaces. */
+export const address = z
+  .string()
+  .transform((s) => s.replace(/\s+/g, " ").trim())
+  .pipe(z.string().min(1).max(ADDRESS_MAX));
 /** Calendar date as `YYYY-MM-DD`. */
 const date = z.iso.date();
 const id = z.number().int().positive();

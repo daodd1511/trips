@@ -91,7 +91,7 @@ function usePlaceWrite<TVars extends { placeId: number }>(
     },
     onSuccess: ({ place }) => {
       putPlace(queryClient, place.id, () => place);
-      refresh(queryClient, ["trips", "active-trip", "categories"]);
+      refresh(queryClient, ["places", "trips", "active-trip", "categories"]);
     },
   });
 }

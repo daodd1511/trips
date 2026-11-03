@@ -110,3 +110,12 @@ test("search matches the address, ignoring accents", async () => {
   const res = await call<PlaceView[]>("GET", `/api/trips/${trip.id}/places?q=phan%20boi%20chau`);
   expect(res.body.map((p) => p.name)).toEqual(["Food court"]);
 });
+
+test("the address is stored as one line, and only http or https links are accepted", async () => {
+  const { call, trip } = await withTrip();
+  const res = await call<PlaceSaveResult>("POST", `/api/trips/${trip.id}/places`, { name: "x", address: "  12 Phan Bội Châu\r\n Đà Lạt  " });
+  expect(res.body.place.address).toBe("12 Phan Bội Châu Đà Lạt");
+  expect((await call("POST", `/api/trips/${trip.id}/places`, { name: "x", address: " \n " })).status).toBe(400);
+  expect((await call("POST", `/api/trips/${trip.id}/places`, { name: "x", mapsUrl: "javascript:alert(1)" })).status).toBe(400);
+  expect((await call("POST", `/api/trips/${trip.id}/places`, { name: "x", sourceUrl: "javascript:alert(1)" })).status).toBe(400);
+});

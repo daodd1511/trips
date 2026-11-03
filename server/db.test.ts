@@ -170,3 +170,39 @@ test("a fresh database gets no backup", () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("a migration that breaks a foreign key rolls back, stays unrecorded, and restores foreign keys", () => {
+  const only = mkdtempSync(join(tmpdir(), "trips-migrations-"));
+  writeFileSync(join(only, "001_init.sql"), readFileSync(join(MIGRATIONS, "001_init.sql")));
+  const db = openDb(":memory:");
+  try {
+    migrate(db, only);
+    db.exec("INSERT INTO trips (id, name, currency) VALUES (1, 'Đà Lạt', 'VND')");
+    db.exec("INSERT INTO places (id, trip_id, name, maps_url) VALUES (1, 1, 'Kem bơ', 'https://maps.app.goo.gl/x')");
+    db.exec("INSERT INTO place_categories (place_id, category_id) VALUES (1, 4)");
+    // With foreign keys off, deleting the parent leaves an orphan link behind.
+    writeFileSync(join(only, "002_bad.sql"), "DELETE FROM places WHERE id = 1;");
+
+    expect(() => migrate(db, only)).toThrow(/foreign key/);
+
+    expect(db.query("SELECT COUNT(*) AS n FROM places").get()).toEqual({ n: 1 });
+    expect(db.query("SELECT COUNT(*) AS n FROM place_categories").get()).toEqual({ n: 1 });
+    expect(db.query("SELECT name FROM schema_migrations ORDER BY name").all()).toEqual([{ name: "001_init.sql" }]);
+    expect(db.query("PRAGMA foreign_keys").get()).toEqual({ foreign_keys: 1 });
+  } finally {
+    rmSync(only, { recursive: true, force: true });
+  }
+});
+
+test("migrate refuses to run inside an open transaction, where foreign keys cannot be turned off", () => {
+  const only = mkdtempSync(join(tmpdir(), "trips-migrations-"));
+  writeFileSync(join(only, "001_init.sql"), readFileSync(join(MIGRATIONS, "001_init.sql")));
+  const db = openDb(":memory:");
+  try {
+    db.exec("BEGIN");
+    expect(() => migrate(db, only)).toThrow(/foreign keys could not be turned off/);
+    db.exec("ROLLBACK");
+  } finally {
+    rmSync(only, { recursive: true, force: true });
+  }
+});

@@ -1,10 +1,9 @@
 import { z } from "zod";
-import { ADDRESS_MAX, NOTES_MAX, PLACE_STATUSES } from "./schemas.ts";
+import { address, NOTES_MAX, PLACE_STATUSES, url } from "./schemas.ts";
 
 export const EXPORT_VERSION = 1;
 
 const name = z.string().trim().min(1).max(200);
-const url = z.url().max(2000);
 const notes = z.string().max(NOTES_MAX).nullable();
 const date = z.iso.date();
 
@@ -14,7 +13,7 @@ const exportPlace = z
     ref: z.number().int().positive(),
     name,
     /** Absent in files exported before addresses existed. */
-    address: z.string().trim().min(1).max(ADDRESS_MAX).nullable().default(null),
+    address: address.nullable().default(null),
     mapsUrl: url.nullable(),
     sourceUrl: url.nullable(),
     notes,
