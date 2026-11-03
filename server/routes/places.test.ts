@@ -111,11 +111,16 @@ test("search matches the address, ignoring accents", async () => {
   expect(res.body.map((p) => p.name)).toEqual(["Food court"]);
 });
 
-test("the address is stored as one line, and only http or https links are accepted", async () => {
+test("the address is stored as one line, and script links are rejected", async () => {
   const { call, trip } = await withTrip();
   const res = await call<PlaceSaveResult>("POST", `/api/trips/${trip.id}/places`, { name: "x", address: "  12 Phan Bội Châu\r\n Đà Lạt  " });
   expect(res.body.place.address).toBe("12 Phan Bội Châu Đà Lạt");
   expect((await call("POST", `/api/trips/${trip.id}/places`, { name: "x", address: " \n " })).status).toBe(400);
   expect((await call("POST", `/api/trips/${trip.id}/places`, { name: "x", mapsUrl: "javascript:alert(1)" })).status).toBe(400);
   expect((await call("POST", `/api/trips/${trip.id}/places`, { name: "x", sourceUrl: "javascript:alert(1)" })).status).toBe(400);
+  expect((await call("POST", `/api/trips/${trip.id}/places`, { name: "x", mapsUrl: "data:text/html,hi" })).status).toBe(400);
+  const app = await call<PlaceSaveResult>("POST", `/api/trips/${trip.id}/places`, { name: "x", mapsUrl: "comgooglemaps://?q=Da+Lat" });
+  expect(app.status).toBe(201);
+  const edited = await call<PlaceSaveResult>("PATCH", `/api/places/${app.body.place.id}`, { status: "visited" });
+  expect(edited.status).toBe(200);
 });

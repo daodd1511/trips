@@ -8,8 +8,13 @@ export const NOTES_MAX = 2000;
 export const ADDRESS_MAX = 300;
 
 const name = z.string().trim().min(1).max(200);
-/** An http or https link; other schemes, such as `javascript:`, are rejected. */
-export const url = z.url({ protocol: /^https?$/ }).max(2000);
+const SCRIPT_SCHEMES = /^\s*(javascript|data|vbscript):/i;
+
+/** A link of any scheme except ones that run code when opened, such as `javascript:`. */
+export const url = z
+  .url()
+  .max(2000)
+  .refine((value) => !SCRIPT_SCHEMES.test(value), "This kind of link isn't allowed");
 const notes = z.string().trim().max(NOTES_MAX);
 /** One line of text: line breaks and runs of whitespace collapse to single spaces. */
 export const address = z
