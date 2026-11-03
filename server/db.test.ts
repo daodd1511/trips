@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { Database } from "bun:sqlite";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { categoryKey, migrate, openDb } from "./db.ts";
@@ -16,7 +17,7 @@ test("migrate is idempotent and seeds Other exactly once", () => {
   const others = db.query("SELECT COUNT(*) AS n FROM categories WHERE is_system = 1").get() as { n: number };
   const applied = db.query("SELECT COUNT(*) AS n FROM schema_migrations").get() as { n: number };
   expect(others.n).toBe(1);
-  expect(applied.n).toBe(1);
+  expect(applied.n).toBe(readdirSync(`${import.meta.dir}/migrations`).filter((f) => f.endsWith(".sql")).length);
 });
 
 test("deleting a trip cascades and clears the active trip", () => {
@@ -105,4 +106,67 @@ test("seeds the default categories in order, with Other last and no Stay", () =>
     "Night market",
     "Other",
   ]);
+});
+
+const MIGRATIONS = `${import.meta.dir}/migrations`;
+
+/** A database file migrated up to and including `last`, in a fresh temp directory. */
+function migratedTo(last: string) {
+  const dir = mkdtempSync(join(tmpdir(), "trips-db-"));
+  const only = mkdtempSync(join(tmpdir(), "trips-migrations-"));
+  for (const f of readdirSync(MIGRATIONS).filter((f) => f.endsWith(".sql") && f <= last)) {
+    writeFileSync(join(only, f), readFileSync(join(MIGRATIONS, f)));
+  }
+  const db = openDb(join(dir, "trips.db"));
+  migrate(db, only);
+  return { db, dir, cleanup: () => (db.close(), rmSync(dir, { recursive: true, force: true }), rmSync(only, { recursive: true, force: true })) };
+}
+
+test("002 keeps every place, category link, and expense link, and makes the Maps link optional", () => {
+  const { db, dir, cleanup } = migratedTo("001_init.sql");
+  try {
+    db.exec("INSERT INTO trips (id, name, currency) VALUES (1, 'Đà Lạt', 'VND')");
+    db.exec("INSERT INTO places (id, trip_id, name, maps_url, notes, status, rating) VALUES (1, 1, 'Kem bơ', 'https://maps.app.goo.gl/x', 'sầu riêng', 'visited', 8)");
+    db.exec("INSERT INTO places (id, trip_id, name, maps_url) VALUES (2, 1, 'Chợ đêm', 'https://maps.app.goo.gl/y')");
+    db.exec("INSERT INTO place_categories (place_id, category_id) VALUES (1, 4), (1, 6), (2, 9)");
+    db.exec("INSERT INTO expenses (trip_id, place_id, name, amount, spent_on) VALUES (1, 1, 'Kem bơ', 49000, '2026-11-19')");
+    db.exec("INSERT INTO expenses (trip_id, place_id, name, amount, spent_on) VALUES (1, NULL, 'Taxi', 250000, '2026-11-18')");
+    const snapshot = () => ({
+      places: db.query("SELECT id, trip_id, name, maps_url, notes, status, rating, created_at FROM places ORDER BY id").all(),
+      links: db.query("SELECT * FROM place_categories ORDER BY place_id, category_id").all(),
+      expenses: db.query("SELECT id, place_id, name, amount FROM expenses ORDER BY id").all(),
+    });
+    const before = snapshot();
+
+    migrate(db);
+
+    expect(snapshot()).toEqual(before);
+    expect(db.query("PRAGMA foreign_keys").get()).toEqual({ foreign_keys: 1 });
+    expect(db.query("PRAGMA foreign_key_check").all()).toEqual([]);
+    db.exec("INSERT INTO places (trip_id, name, address) VALUES (1, 'Food court', '12 Phan Bội Châu')");
+    expect(() => db.exec("INSERT INTO places (trip_id, name, address) VALUES (1, 'x', '')")).toThrow();
+    db.exec("DELETE FROM places WHERE id = 1");
+    expect(db.query("SELECT place_id FROM expenses WHERE name = 'Kem bơ'").get()).toEqual({ place_id: null });
+    expect(db.query("SELECT COUNT(*) AS n FROM place_categories WHERE place_id = 1").get()).toEqual({ n: 0 });
+
+    const backups = readdirSync(dir).filter((f) => f.startsWith("trips.before-002_"));
+    expect(backups).toHaveLength(1);
+    const copy = new Database(join(dir, backups[0] ?? ""), { readonly: true });
+    expect(copy.query("SELECT COUNT(*) AS n FROM places").get()).toEqual({ n: 2 });
+    copy.close();
+  } finally {
+    cleanup();
+  }
+});
+
+test("a fresh database gets no backup", () => {
+  const dir = mkdtempSync(join(tmpdir(), "trips-db-"));
+  try {
+    const db = openDb(join(dir, "trips.db"));
+    migrate(db);
+    db.close();
+    expect(readdirSync(dir).filter((f) => f.includes(".before-"))).toEqual([]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
