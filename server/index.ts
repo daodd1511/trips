@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { mkdirSync } from "node:fs";
+import type { Context } from "hono";
 import { serveStatic } from "hono/bun";
 import { createApp } from "./app.ts";
 import { migrate, openDb } from "./db.ts";
@@ -17,10 +18,16 @@ const db = openDb(join(dataDir, "trips.db"));
 migrate(db);
 
 const app = createApp({ db, password, timeZone: process.env.TIME_ZONE ?? "Asia/Ho_Chi_Minh" });
-app.use("/*", serveStatic({ root: "./dist" }));
+
+// index.html must be revalidated on every load so a reload picks up a new deploy;
+// files under assets/ carry a content hash in their name, so they never change.
+const cacheHeaders = (path: string, c: Context): void => {
+  c.header("Cache-Control", path.includes("/assets/") ? "public, max-age=31536000, immutable" : "no-cache");
+};
+app.use("/*", serveStatic({ root: "./dist", onFound: cacheHeaders }));
 app.get("*", async (c, next) => {
   if (c.req.path.startsWith("/api/")) return next();
-  return serveStatic({ path: "./dist/index.html" })(c, next);
+  return serveStatic({ path: "./dist/index.html", onFound: cacheHeaders })(c, next);
 });
 
 const server = Bun.serve({ port, fetch: app.fetch });
