@@ -117,6 +117,8 @@
   html {
     @apply font-sans;
     -webkit-tap-highlight-color: transparent;
+    /* No double-tap zoom, so taps fire without waiting to see if a second one follows. */
+    touch-action: manipulation;
   }
   body {
     @apply bg-background text-foreground;
