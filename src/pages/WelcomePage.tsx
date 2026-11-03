@@ -34,7 +34,7 @@ export function WelcomePage() {
           Create your first trip. You can add places, stays, and spending after.
         </p>
       </div>
-      <section className="grid gap-3 rounded-t-sheet bg-background px-5 pb-[max(env(safe-area-inset-bottom),32px)] pt-6 text-ink">
+      <section className="grid gap-4 rounded-t-sheet bg-background px-5 pb-[max(env(safe-area-inset-bottom),32px)] pt-7 text-ink">
         <TripForm submitLabel="Create trip" pending={createTrip.isPending} onSubmit={handleCreate} onThemePreview={setPreview} />
         <ImportButton className="w-full" onImported={() => navigate("/places", { replace: true })} />
       </section>

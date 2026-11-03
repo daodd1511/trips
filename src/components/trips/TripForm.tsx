@@ -1,10 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { Field, FieldStack } from "@/components/form/Field";
 import { PalettePicker } from "@/components/theme/PalettePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CURRENCIES } from "@/lib/palettes";
 import { THEME_KEYS, type ThemeKey } from "../../../shared/themes.ts";
@@ -43,14 +43,12 @@ export function TripForm({
   const nameError = form.formState.errors.name?.message;
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="grid gap-4">
-      <div className="grid gap-2">
-        <Label htmlFor="trip-name">Trip name</Label>
+    <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+      <FieldStack>
+      <Field label="Trip name" htmlFor="trip-name" error={nameError}>
         <Input id="trip-name" placeholder="Đà Lạt" aria-invalid={!!nameError} {...form.register("name")} />
-        {nameError && <p className="pl-1 text-xs text-danger">{nameError}</p>}
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="trip-currency">Currency</Label>
+      </Field>
+      <Field label="Currency" htmlFor="trip-currency" hint={currencyLockedReason}>
         <Controller
           control={form.control}
           name="currency"
@@ -69,10 +67,8 @@ export function TripForm({
             </Select>
           )}
         />
-        {currencyLockedReason && <p className="pl-1 text-xs text-muted-foreground">{currencyLockedReason}</p>}
-      </div>
-      <div className="grid gap-2">
-        <span className="text-sm font-medium">Palette</span>
+      </Field>
+      <Field label="Palette">
         <Controller
           control={form.control}
           name="theme"
@@ -86,10 +82,11 @@ export function TripForm({
             />
           )}
         />
-      </div>
+      </Field>
       <Button type="submit" className="w-full" disabled={pending}>
         {submitLabel}
       </Button>
+      </FieldStack>
     </form>
   );
 }

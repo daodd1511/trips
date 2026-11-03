@@ -3,10 +3,10 @@ import { Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Field } from "@/components/form/Field";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateStay, useDeleteStay, useUpdateStay } from "@/lib/queries";
 import { NOTES_MAX, type Stay } from "../../../shared/schemas.ts";
@@ -95,48 +95,39 @@ function StayForm({ tripId, stay, onDone }: { tripId: number; stay: Stay | null;
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="grid gap-4 overflow-y-auto px-[18px] pb-[max(env(safe-area-inset-bottom),22px)] pt-3"
+      className="grid gap-6 overflow-y-auto px-5 pb-[max(env(safe-area-inset-bottom),28px)] pt-3"
     >
       <DrawerTitle className="text-[22px] font-semibold tracking-[-0.02em]">{stay ? "Edit stay" : "New stay"}</DrawerTitle>
       <DrawerDescription className="sr-only">Where you stay, dates, and booking notes</DrawerDescription>
-      <div className="grid gap-2">
-        <Label htmlFor="stay-name">Name</Label>
+      <Field label="Name" htmlFor="stay-name" error={errors.name?.message}>
         <Input id="stay-name" aria-invalid={!!errors.name} {...form.register("name")} />
-        {errors.name && <p className="pl-1 text-xs text-danger">{errors.name.message}</p>}
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="stay-maps">
-          Google Maps link <span className="font-normal text-muted-foreground">optional</span>
-        </Label>
+      </Field>
+      <Field label="Google Maps link" htmlFor="stay-maps" optional error={errors.mapsUrl?.message}>
         <Input id="stay-maps" inputMode="url" autoComplete="off" aria-invalid={!!errors.mapsUrl} {...form.register("mapsUrl")} />
-        {errors.mapsUrl && <p className="pl-1 text-xs text-danger">{errors.mapsUrl.message}</p>}
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="grid gap-2">
-          <Label htmlFor="stay-in">
-            Check-in <span className="font-normal text-muted-foreground">optional</span>
-          </Label>
-          <Input id="stay-in" type="date" {...form.register("checkIn", { deps: ["checkOut"] })} />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="stay-out">
-            Check-out <span className="font-normal text-muted-foreground">optional</span>
-          </Label>
-          <Input id="stay-out" type="date" aria-invalid={!!errors.checkOut} {...form.register("checkOut")} />
-        </div>
-      </div>
-      {errors.checkOut && <p className="-mt-2 pl-1 text-xs text-danger">{errors.checkOut.message}</p>}
+      </Field>
       <div className="grid gap-2">
-        <Label htmlFor="stay-notes">
-          Notes <span className="font-normal text-muted-foreground">optional</span>
-        </Label>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Check-in" htmlFor="stay-in" optional>
+            <Input id="stay-in" type="date" {...form.register("checkIn", { deps: ["checkOut"] })} />
+          </Field>
+          <Field label="Check-out" htmlFor="stay-out" optional>
+            <Input id="stay-out" type="date" aria-invalid={!!errors.checkOut} {...form.register("checkOut")} />
+          </Field>
+        </div>
+        {errors.checkOut && (
+          <p className="pl-1 text-xs text-danger" role="alert">
+            {errors.checkOut.message}
+          </p>
+        )}
+      </div>
+      <Field label="Notes" htmlFor="stay-notes" optional>
         <Textarea
           id="stay-notes"
           placeholder="Booking code, door code, host phone like 0358937727"
           {...form.register("notes")}
         />
-      </div>
-      <div className="grid grid-cols-2 gap-2">
+      </Field>
+      <div className="mt-1 grid grid-cols-2 gap-2">
         {stay ? (
           <Button type="button" variant="destructiveGhost" onClick={handleDelete} disabled={deleteStay.isPending}>
             <Trash2 aria-hidden />

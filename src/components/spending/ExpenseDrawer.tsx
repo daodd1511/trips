@@ -3,10 +3,10 @@ import { Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Field } from "@/components/form/Field";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useDeleteExpense, useUpdateExpense } from "@/lib/queries";
 import { parsePrice } from "../../../shared/price.ts";
 import type { Expense } from "../../../shared/schemas.ts";
@@ -74,28 +74,21 @@ function ExpenseForm({ expense, onDone }: { expense: Expense; onDone: () => void
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="grid gap-4 px-[18px] pb-[max(env(safe-area-inset-bottom),22px)] pt-3">
+    <form onSubmit={handleSubmit} noValidate className="grid gap-6 px-5 pb-[max(env(safe-area-inset-bottom),28px)] pt-3">
       <DrawerTitle className="text-[22px] font-semibold tracking-[-0.02em]">Edit expense</DrawerTitle>
       <DrawerDescription className="sr-only">Change the name, amount, or date</DrawerDescription>
-      <div className="grid gap-2">
-        <Label htmlFor="expense-name">Name</Label>
+      <Field label="Name" htmlFor="expense-name" error={errors.name?.message}>
         <Input id="expense-name" aria-invalid={!!errors.name} {...form.register("name")} />
-        {errors.name && <p className="pl-1 text-xs text-danger">{errors.name.message}</p>}
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="grid gap-2">
-          <Label htmlFor="expense-price">Amount</Label>
+      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Amount" htmlFor="expense-price" error={errors.price?.message}>
           <Input id="expense-price" autoComplete="off" aria-invalid={!!errors.price} {...form.register("price")} />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="expense-date">Date</Label>
+        </Field>
+        <Field label="Date" htmlFor="expense-date" error={errors.spentOn?.message}>
           <Input id="expense-date" type="date" aria-invalid={!!errors.spentOn} {...form.register("spentOn")} />
-        </div>
+        </Field>
       </div>
-      {(errors.price || errors.spentOn) && (
-        <p className="-mt-2 pl-1 text-xs text-danger">{errors.price?.message ?? errors.spentOn?.message}</p>
-      )}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="mt-1 grid grid-cols-2 gap-2">
         <Button type="button" variant="destructiveGhost" onClick={handleDelete} disabled={deleteExpense.isPending}>
           <Trash2 aria-hidden />
           Delete

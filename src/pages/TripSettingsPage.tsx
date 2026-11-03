@@ -82,7 +82,7 @@ export function TripSettingsPage() {
   return (
     <>
       <MainHeader title="Trip" subtitle={`Settings for ${trip.name}`} />
-      <div className="px-4 pb-4 pt-[18px]">
+      <div className="px-4 pb-6 pt-6">
         <TripForm
           key={`${trip.id}-${trip.name}-${trip.currency}-${trip.theme}`}
           defaultValues={{ name: trip.name, currency: trip.currency, theme: trip.theme }}
@@ -94,7 +94,7 @@ export function TripSettingsPage() {
         />
       </div>
 
-      <div className="mx-4 mb-3.5 overflow-hidden rounded-card bg-sunken [&>*+*]:border-t [&>*+*]:border-background">
+      <div className="mx-4 mb-4 overflow-hidden rounded-card bg-sunken [&>*+*]:border-t [&>*+*]:border-background">
         <SettingLink
           to="/categories"
           icon={<Tags className="size-[18px] text-muted-foreground" aria-hidden />}
@@ -118,7 +118,7 @@ export function TripSettingsPage() {
         </Button>
       </div>
 
-      <div className="mx-4 overflow-hidden rounded-card bg-sunken">
+      <div className="mx-4 mb-6 overflow-hidden rounded-card bg-sunken">
         <AlertDialog onOpenChange={() => setConfirm("")}>
           <AlertDialogTrigger asChild>
             <Button variant="destructiveGhost" className="h-12 w-full justify-start rounded-none px-3.5 font-normal">

@@ -3,10 +3,10 @@ import { CircleAlert } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router";
 import { z } from "zod";
+import { Field } from "@/components/form/Field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api";
 import { useLogin, useSession } from "@/lib/queries";
 import { useTripTheme } from "@/components/theme/use-trip-theme";
@@ -53,10 +53,9 @@ export function LoginPage() {
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="grid gap-3 rounded-t-sheet bg-background px-5 pb-[max(env(safe-area-inset-bottom),40px)] pt-6 text-ink"
+        className="grid gap-4 rounded-t-sheet bg-background px-5 pb-[max(env(safe-area-inset-bottom),40px)] pt-7 text-ink"
       >
-        <div className="grid gap-2">
-          <Label htmlFor="password">Password</Label>
+        <Field label="Password" htmlFor="password" error={fieldError}>
           <Input
             id="password"
             type="password"
@@ -64,8 +63,7 @@ export function LoginPage() {
             aria-invalid={!!fieldError || login.isError}
             {...form.register("password")}
           />
-          {fieldError && <p className="pl-1 text-xs text-danger">{fieldError}</p>}
-        </div>
+        </Field>
         {login.isError && (
           <Alert variant="destructive">
             <CircleAlert aria-hidden />

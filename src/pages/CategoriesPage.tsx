@@ -2,6 +2,7 @@ import { ChevronLeft, Lock, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
+import { Field } from "@/components/form/Field";
 import { FormHeader } from "@/components/layout/MainHeader";
 import {
   AlertDialog,
@@ -16,7 +17,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { categoryIcon } from "@/lib/category-icons";
 import { useActiveTrip, useCategories, useCreateCategory, useDeleteCategory, useRenameCategory } from "@/lib/queries";
 import type { CategoryView } from "../../shared/schemas.ts";
@@ -44,15 +44,14 @@ function NameForm({ editing, onDone }: { editing: Editing; onDone: () => void })
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="grid gap-4 px-[18px] pb-[max(env(safe-area-inset-bottom),22px)] pt-3">
+    <form onSubmit={handleSubmit} noValidate className="grid gap-6 px-5 pb-[max(env(safe-area-inset-bottom),28px)] pt-3">
       <DrawerTitle className="text-[22px] font-semibold tracking-[-0.02em]">
         {editing.mode === "rename" ? "Rename category" : "New category"}
       </DrawerTitle>
       <DrawerDescription className="sr-only">Category name, shared by all trips</DrawerDescription>
-      <div className="grid gap-2">
-        <Label htmlFor="category-name">Name</Label>
+      <Field label="Name" htmlFor="category-name" hint="Shared by all trips.">
         <Input id="category-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoComplete="off" />
-      </div>
+      </Field>
       <Button type="submit" disabled={!name.trim() || pending}>
         Save
       </Button>
