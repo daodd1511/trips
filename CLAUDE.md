@@ -1,7 +1,7 @@
 # trips
 
 Self-hosted trip planner: places, stays, and spending per trip. Plan and design live
-in `docs/specs/place-manager/`.
+in `docs/specs/archive/2026-11-03-place-manager/` (finished and archived).
 
 ## Spec-Driven Execution Workflow
 <!-- spec-workflow v1 -->
