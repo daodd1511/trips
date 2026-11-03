@@ -28,7 +28,7 @@ function readFilters(params: URLSearchParams) {
 
 function matches(place: PlaceView, cats: number[], q: string): boolean {
   if (cats.length && !place.categoryIds.some((id) => cats.includes(id))) return false;
-  return !q || searchKey(`${place.name} ${place.notes ?? ""}`).includes(searchKey(q.trim()));
+  return !q || searchKey([place.name, place.address, place.notes].filter(Boolean).join("\n")).includes(searchKey(q.trim()));
 }
 
 export function PlacesPage() {
@@ -134,8 +134,8 @@ export function PlacesPage() {
           type="search"
           value={q}
           onChange={(e) => setParam("q", e.target.value)}
-          placeholder="Search places and notes"
-          aria-label="Search places and notes"
+          placeholder="Search places, addresses, notes"
+          aria-label="Search places, addresses, and notes"
           className="pl-11"
         />
       </div>

@@ -1,6 +1,7 @@
 import { Check, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { categoryIcon } from "@/lib/category-icons";
+import { directionsUrl } from "@/lib/directions";
 import { cn } from "@/lib/utils";
 import type { CategoryView, PlaceView } from "../../../shared/schemas.ts";
 
@@ -14,14 +15,15 @@ type PlaceRowProps = {
 export function PlaceRow({ place, categories, onOpen }: PlaceRowProps) {
   const names = place.categoryIds.map((id) => categories.get(id)?.name).filter((n): n is string => !!n);
   const Icon = place.status === "visited" ? Check : categoryIcon(names[0] ?? "other");
-  const subline = [...names, place.notes].filter(Boolean).join(" · ");
+  const subline = [...names, place.address, place.notes].filter(Boolean).join(" · ");
+  const directions = directionsUrl(place);
 
   return (
     <li className="flex items-center gap-1 border-b border-line">
       <button
         type="button"
         onClick={() => onOpen(place.id)}
-        className="flex min-w-0 flex-1 items-center gap-3 py-3 text-left"
+        className="flex min-w-0 flex-1 items-center gap-3 py-3.5 text-left"
       >
         <span
           className={cn(
@@ -34,7 +36,7 @@ export function PlaceRow({ place, categories, onOpen }: PlaceRowProps) {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium">{place.name}</span>
-          {subline && <span className="block truncate text-[13px] text-muted-foreground">{subline}</span>}
+          {subline && <span className="mt-0.5 block truncate text-[13px] text-muted-foreground">{subline}</span>}
         </span>
         {place.rating !== null && (
           <span className="text-sm font-semibold text-brand-deep">
@@ -44,11 +46,15 @@ export function PlaceRow({ place, categories, onOpen }: PlaceRowProps) {
           </span>
         )}
       </button>
-      <Button asChild variant="ghost" size="icon-sm" aria-label={`Directions to ${place.name}`}>
-        <a href={place.mapsUrl} target="_blank" rel="noreferrer">
-          <Navigation strokeWidth={1.75} />
-        </a>
-      </Button>
+      {directions ? (
+        <Button asChild variant="ghost" size="icon-sm" aria-label={`Directions to ${place.name}`}>
+          <a href={directions} target="_blank" rel="noreferrer">
+            <Navigation strokeWidth={1.75} />
+          </a>
+        </Button>
+      ) : (
+        <span className="size-9 shrink-0" aria-hidden />
+      )}
     </li>
   );
 }

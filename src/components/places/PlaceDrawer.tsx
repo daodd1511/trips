@@ -1,10 +1,11 @@
-import { Clapperboard, Navigation, Pencil } from "lucide-react";
+import { Clapperboard, MapPin, Navigation, Pencil } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { directionsUrl } from "@/lib/directions";
 import { formatMoney, localToday } from "@/lib/format";
 import { useAddPlaceExpense, useSetPlaceStatus, useUpdatePlace } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -56,7 +57,7 @@ export function PlaceDrawer({ place, open, categories, currency, onClose }: Plac
     <Drawer open={open && place !== null} onOpenChange={(next) => !next && onClose()}>
       <DrawerContent>
         {place && (
-          <div className="overflow-y-auto px-[18px] pb-[max(env(safe-area-inset-bottom),22px)] pt-3">
+          <div className="overflow-y-auto px-5 pb-[max(env(safe-area-inset-bottom),28px)] pt-3">
             <div className="flex items-start justify-between gap-2">
               <DrawerTitle className="text-[22px] font-semibold leading-tight tracking-[-0.02em]">{place.name}</DrawerTitle>
               <Button asChild variant="ghost" size="icon-sm" aria-label="Edit place">
@@ -66,7 +67,13 @@ export function PlaceDrawer({ place, open, categories, currency, onClose }: Plac
               </Button>
             </div>
             <DrawerDescription className="sr-only">Details, status, rating, and spending</DrawerDescription>
-            <div className="mb-4 mt-2 flex flex-wrap gap-1.5">
+            {place.address && (
+              <p className="mt-1.5 flex items-start gap-1.5 text-sm text-muted-foreground">
+                <MapPin className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                {place.address}
+              </p>
+            )}
+            <div className="mb-5 mt-3 flex flex-wrap gap-1.5">
               {place.categoryIds.map((id) => (
                 <Badge key={id} variant="secondary">
                   {categories.get(id)?.name}
@@ -74,13 +81,20 @@ export function PlaceDrawer({ place, open, categories, currency, onClose }: Plac
               ))}
             </div>
 
-            <div className="mb-[18px] grid grid-cols-2 gap-2">
-              <Button asChild>
-                <a href={place.mapsUrl} target="_blank" rel="noreferrer">
+            <div className="mb-6 grid grid-cols-2 gap-2">
+              {directionsUrl(place) ? (
+                <Button asChild>
+                  <a href={directionsUrl(place) ?? undefined} target="_blank" rel="noreferrer">
+                    <Navigation aria-hidden />
+                    Directions
+                  </a>
+                </Button>
+              ) : (
+                <Button disabled>
                   <Navigation aria-hidden />
-                  Directions
-                </a>
-              </Button>
+                  No location
+                </Button>
+              )}
               {place.sourceUrl ? (
                 <Button asChild variant="secondary">
                   <a href={place.sourceUrl} target="_blank" rel="noreferrer">
@@ -96,8 +110,8 @@ export function PlaceDrawer({ place, open, categories, currency, onClose }: Plac
               )}
             </div>
 
-            <section className="mb-[18px]">
-              <h3 className="mb-2 text-[13px] text-muted-foreground">Status</h3>
+            <section className="mb-6">
+              <h3 className="mb-2.5 text-[13px] text-muted-foreground">Status</h3>
               <ToggleGroup type="single" value={place.status} onValueChange={handleStatus} className="grid w-full grid-cols-3 gap-1.5">
                 {PLACE_STATUSES.map((s) => (
                   <ToggleGroupItem key={s} value={s} className="h-10">
@@ -107,8 +121,8 @@ export function PlaceDrawer({ place, open, categories, currency, onClose }: Plac
               </ToggleGroup>
             </section>
 
-            <section className="mb-[18px]">
-              <h3 className="mb-2 text-[13px] text-muted-foreground">Your rating</h3>
+            <section className="mb-6">
+              <h3 className="mb-2.5 text-[13px] text-muted-foreground">Your rating</h3>
               {place.status === "visited" ? (
                 <ToggleGroup
                   type="single"
@@ -136,14 +150,14 @@ export function PlaceDrawer({ place, open, categories, currency, onClose }: Plac
             </section>
 
             {place.notes && (
-              <section className="mb-[18px]">
-                <h3 className="mb-1 text-[13px] text-muted-foreground">Notes</h3>
+              <section className="mb-6">
+                <h3 className="mb-1.5 text-[13px] text-muted-foreground">Notes</h3>
                 <p className="whitespace-pre-wrap">{place.notes}</p>
               </section>
             )}
 
             <section>
-              <h3 className="mb-2 text-[13px] text-muted-foreground">
+              <h3 className="mb-2.5 text-[13px] text-muted-foreground">
                 Spent here{place.spent > 0 && ` · ${formatMoney(place.spent, currency)} so far`}
               </h3>
               <PriceField currency={currency} pending={addExpense.isPending} onAdd={handleAddExpense} />

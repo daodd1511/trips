@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTrip } from "@/components/layout/AppShell";
+import { Field, FieldStack } from "@/components/form/Field";
 import { FormHeader } from "@/components/layout/MainHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -20,18 +21,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { categoryIcon } from "@/lib/category-icons";
 import { useCategories, useCreatePlace, useDeletePlace, usePlaces, useUpdatePlace } from "@/lib/queries";
-import { NOTES_MAX, type PlaceView } from "../../shared/schemas.ts";
+import { ADDRESS_MAX, NOTES_MAX, type PlaceView } from "../../shared/schemas.ts";
 
 const optionalUrl = z.union([z.literal(""), z.url("Paste a full link, starting with https://")]);
 
 const schema = z.object({
   name: z.string().trim().min(1, "Give the place a name").max(200),
-  mapsUrl: z.url("Paste the Google Maps link"),
+  address: z.string().max(ADDRESS_MAX, `Keep the address under ${ADDRESS_MAX} characters`),
+  mapsUrl: optionalUrl,
   sourceUrl: optionalUrl,
   notes: z.string().max(NOTES_MAX, `Keep notes under ${NOTES_MAX} characters`),
   categoryIds: z.array(z.string()),
@@ -40,6 +41,7 @@ type Values = z.infer<typeof schema>;
 
 const toValues = (p: PlaceView | undefined): Values => ({
   name: p?.name ?? "",
+  address: p?.address ?? "",
   mapsUrl: p?.mapsUrl ?? "",
   sourceUrl: p?.sourceUrl ?? "",
   notes: p?.notes ?? "",
@@ -48,7 +50,8 @@ const toValues = (p: PlaceView | undefined): Values => ({
 
 const toInput = (v: Values) => ({
   name: v.name.trim(),
-  mapsUrl: v.mapsUrl.trim(),
+  address: v.address.trim() || null,
+  mapsUrl: v.mapsUrl.trim() || null,
   sourceUrl: v.sourceUrl.trim() || null,
   notes: v.notes.trim() || null,
   categoryIds: v.categoryIds.map(Number),
@@ -134,15 +137,28 @@ function PlaceForm({ tripId, place, siblings }: PlaceFormProps) {
           </Button>
         }
       />
-      <div className="grid gap-4 px-4 pb-10 pt-[18px]">
-        <div className="grid gap-2">
-          <Label htmlFor="place-name">Name</Label>
+      <FieldStack className="px-4 pb-12 pt-6">
+        <Field label="Name" htmlFor="place-name" error={errors.name?.message}>
           <Input id="place-name" aria-invalid={!!errors.name} {...form.register("name")} />
-          {errors.name && <p className="pl-1 text-xs text-danger">{errors.name.message}</p>}
-        </div>
+        </Field>
 
-        <div className="grid gap-2">
-          <Label htmlFor="place-maps">Google Maps link</Label>
+        <Field
+          label="Address"
+          htmlFor="place-address"
+          optional
+          error={errors.address?.message}
+          hint="For places that aren't on the map. Directions searches for it."
+        >
+          <Input
+            id="place-address"
+            autoComplete="off"
+            placeholder="12 Phan Bội Châu, Đà Lạt"
+            aria-invalid={!!errors.address}
+            {...form.register("address")}
+          />
+        </Field>
+
+        <Field label="Google Maps link" htmlFor="place-maps" optional error={errors.mapsUrl?.message}>
           <Input
             id="place-maps"
             inputMode="url"
@@ -151,19 +167,15 @@ function PlaceForm({ tripId, place, siblings }: PlaceFormProps) {
             aria-invalid={!!errors.mapsUrl}
             {...form.register("mapsUrl")}
           />
-          {errors.mapsUrl && <p className="pl-1 text-xs text-danger">{errors.mapsUrl.message}</p>}
           {duplicate && (
             <Alert variant="warning">
               <TriangleAlert aria-hidden />
               <AlertDescription>“{duplicate.name}” has the same link. You can still save.</AlertDescription>
             </Alert>
           )}
-        </div>
+        </Field>
 
-        <div className="grid gap-2">
-          <Label htmlFor="place-source">
-            TikTok or source link <span className="font-normal text-muted-foreground">optional</span>
-          </Label>
+        <Field label="TikTok or source link" htmlFor="place-source" optional error={errors.sourceUrl?.message}>
           <Input
             id="place-source"
             inputMode="url"
@@ -172,13 +184,9 @@ function PlaceForm({ tripId, place, siblings }: PlaceFormProps) {
             aria-invalid={!!errors.sourceUrl}
             {...form.register("sourceUrl")}
           />
-          {errors.sourceUrl && <p className="pl-1 text-xs text-danger">{errors.sourceUrl.message}</p>}
-        </div>
+        </Field>
 
-        <div className="grid gap-2">
-          <span className="text-sm font-medium" id="place-categories">
-            Categories
-          </span>
+        <Field label="Categories" hint="None picked means Other.">
           <Controller
             control={form.control}
             name="categoryIds"
@@ -187,8 +195,8 @@ function PlaceForm({ tripId, place, siblings }: PlaceFormProps) {
                 type="multiple"
                 value={field.value}
                 onValueChange={field.onChange}
-                aria-labelledby="place-categories"
-                className="flex w-full flex-wrap justify-start gap-1.5"
+                aria-label="Categories"
+                className="flex w-full flex-wrap justify-start gap-2"
               >
                 {(categories.data ?? []).map((c) => {
                   const Icon = categoryIcon(c.name);
@@ -202,16 +210,11 @@ function PlaceForm({ tripId, place, siblings }: PlaceFormProps) {
               </ToggleGroup>
             )}
           />
-          <p className="pl-1 text-xs text-muted-foreground">None picked means Other.</p>
-        </div>
+        </Field>
 
-        <div className="grid gap-2">
-          <Label htmlFor="place-notes">
-            Notes <span className="font-normal text-muted-foreground">optional</span>
-          </Label>
+        <Field label="Notes" htmlFor="place-notes" optional error={errors.notes?.message}>
           <Textarea id="place-notes" placeholder="What to order, when to go" aria-invalid={!!errors.notes} {...form.register("notes")} />
-          {errors.notes && <p className="pl-1 text-xs text-danger">{errors.notes.message}</p>}
-        </div>
+        </Field>
 
         {place && (
           <AlertDialog>
@@ -237,7 +240,7 @@ function PlaceForm({ tripId, place, siblings }: PlaceFormProps) {
             </AlertDialogContent>
           </AlertDialog>
         )}
-      </div>
+      </FieldStack>
     </form>
   );
 }
