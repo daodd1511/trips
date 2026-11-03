@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import type { ExportFile } from "../../shared/export.ts";
+import type { ExportFile, ExportFileInput } from "../../shared/export.ts";
 import type { Expense, PlaceView, TripSummary } from "../../shared/schemas.ts";
 import type { PlaceSaveResult } from "./places.ts";
 import { MAPS, testApp } from "../test-app.ts";
@@ -57,7 +57,7 @@ test("a clashing trip name gets a dated suffix, then a counter", async () => {
 
 test("categories match ignoring case and Unicode form; missing ones are created; Other maps to the system row", async () => {
   const t = await testApp();
-  const file: ExportFile = {
+  const file: ExportFileInput = {
     version: 1,
     exportedAt: "2026-11-20T00:00:00.000Z",
     trips: [
@@ -174,4 +174,33 @@ test("a clashing name at the length limit is cut to fit the suffix", async () =>
   expect(a.endsWith(" (imported 2026-11-19)")).toBe(true);
   expect(b.endsWith(" (imported 2026-11-19) 2")).toBe(true);
   expect(Array.from(b).length).toBeLessThanOrEqual(200);
+});
+
+test("files from before addresses existed still import; address and a missing Maps link round-trip", async () => {
+  const t = await testApp();
+  const old: ExportFileInput = {
+    version: 1,
+    exportedAt: "2026-11-02T00:00:00.000Z",
+    trips: [
+      {
+        name: "Old",
+        currency: "VND",
+        theme: "pine-berry",
+        places: [{ ref: 1, name: "a", mapsUrl: MAPS, sourceUrl: null, notes: null, status: "want", rating: null, categories: [] }],
+        stays: [],
+        expenses: [],
+      },
+    ],
+  };
+  expect((await t.call("POST", "/api/import", old)).status).toBe(201);
+
+  const trip = (await t.call<TripSummary>("POST", "/api/trips", { name: "New", currency: "VND" })).body;
+  await t.call("POST", `/api/trips/${trip.id}/places`, { name: "Food court", address: "12 Phan Bội Châu, Đà Lạt" });
+  const file = await exportAll(t.call);
+  const exported = file.trips.find((x) => x.name === "New")?.places[0];
+  expect(exported).toMatchObject({ name: "Food court", address: "12 Phan Bội Châu, Đà Lạt", mapsUrl: null });
+
+  const target = await testApp();
+  await target.call("POST", "/api/import", file);
+  expect((await exportAll(target.call)).trips).toEqual(file.trips);
 });

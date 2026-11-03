@@ -9,7 +9,8 @@ type PlaceRow = {
   id: number;
   trip_id: number;
   name: string;
-  maps_url: string;
+  address: string | null;
+  maps_url: string | null;
   source_url: string | null;
   notes: string | null;
   status: PlaceStatus;
@@ -30,6 +31,7 @@ const toView = (r: PlaceRow): PlaceView => ({
   id: r.id,
   tripId: r.trip_id,
   name: r.name,
+  address: r.address,
   mapsUrl: r.maps_url,
   sourceUrl: r.source_url,
   notes: r.notes,
@@ -45,7 +47,7 @@ export type PlaceFilter = {
   status?: PlaceStatus;
   /** Matches places in any of these categories. */
   categoryIds?: number[];
-  /** Matches name or notes, ignoring case and Vietnamese marks. */
+  /** Matches name, address, or notes, ignoring case and Vietnamese marks. */
   q?: string;
 };
 
@@ -61,7 +63,7 @@ export function listPlaces(db: Database, tripId: number, filter: PlaceFilter = {
     (p) =>
       (!filter.status || p.status === filter.status) &&
       (!filter.categoryIds?.length || p.categoryIds.some((c) => filter.categoryIds?.includes(c))) &&
-      (!q || searchKey(`${p.name} ${p.notes ?? ""}`).includes(q)),
+      (!q || searchKey([p.name, p.address, p.notes].filter(Boolean).join("\n")).includes(q)),
   );
 }
 
@@ -71,8 +73,9 @@ export function getPlace(db: Database, id: number): PlaceView {
   return toView(row);
 }
 
-/** Another place in the same trip with the same Maps link, if any. */
-function findDuplicate(db: Database, tripId: number, mapsUrl: string, exceptId: number | null) {
+/** Another place in the same trip with the same Maps link, if any. Places without a link never match. */
+function findDuplicate(db: Database, tripId: number, mapsUrl: string | null, exceptId: number | null) {
+  if (mapsUrl === null) return null;
   return (
     db
       .query<{ id: number; name: string }, [number, string, number]>(
@@ -100,11 +103,14 @@ export function createPlace(db: Database, tripId: number, input: PlaceInput): Pl
   return db.transaction(() => {
     assertTrip(db, tripId);
     const row = db
-      .query<{ id: number }, [number, string, string, string | null, string | null, string, number | null]>(
-        `INSERT INTO places (trip_id, name, maps_url, source_url, notes, status, rating)
-         VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+      .query<
+        { id: number },
+        [number, string, string | null, string | null, string | null, string | null, string, number | null]
+      >(
+        `INSERT INTO places (trip_id, name, address, maps_url, source_url, notes, status, rating)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       )
-      .get(tripId, input.name, input.mapsUrl, input.sourceUrl, input.notes, input.status, input.rating);
+      .get(tripId, input.name, input.address, input.mapsUrl, input.sourceUrl, input.notes, input.status, input.rating);
     if (!row) throw new Error("Insert returned no row");
     setCategories(db, row.id, input.categoryIds);
     return { place: getPlace(db, row.id), duplicateOf: findDuplicate(db, tripId, input.mapsUrl, row.id) };
@@ -121,6 +127,7 @@ export function updatePlace(db: Database, id: number, patch: PlacePatch): PlaceS
     const status = patch.status ?? current.status;
     const merged = {
       name: current.name,
+      address: current.address,
       mapsUrl: current.mapsUrl,
       sourceUrl: current.sourceUrl,
       notes: current.notes,
@@ -134,9 +141,9 @@ export function updatePlace(db: Database, id: number, patch: PlacePatch): PlaceS
     const next = parsed.data;
 
     db.query(
-      `UPDATE places SET name = ?, maps_url = ?, source_url = ?, notes = ?, status = ?, rating = ?,
+      `UPDATE places SET name = ?, address = ?, maps_url = ?, source_url = ?, notes = ?, status = ?, rating = ?,
          updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`,
-    ).run(next.name, next.mapsUrl, next.sourceUrl, next.notes, next.status, next.rating, id);
+    ).run(next.name, next.address, next.mapsUrl, next.sourceUrl, next.notes, next.status, next.rating, id);
     if (patch.categoryIds !== undefined) setCategories(db, id, next.categoryIds);
     return { place: getPlace(db, id), duplicateOf: findDuplicate(db, current.tripId, next.mapsUrl, id) };
   })();

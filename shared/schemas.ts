@@ -5,10 +5,12 @@ export const PLACE_STATUSES = ["want", "visited", "skipped"] as const;
 export type PlaceStatus = (typeof PLACE_STATUSES)[number];
 
 export const NOTES_MAX = 2000;
+export const ADDRESS_MAX = 300;
 
 const name = z.string().trim().min(1).max(200);
 const url = z.url().max(2000);
 const notes = z.string().trim().max(NOTES_MAX);
+const address = z.string().trim().min(1).max(ADDRESS_MAX);
 /** Calendar date as `YYYY-MM-DD`. */
 const date = z.iso.date();
 const id = z.number().int().positive();
@@ -23,7 +25,8 @@ export type TripInput = z.infer<typeof tripInput>;
 export const placeInput = z
   .object({
     name,
-    mapsUrl: url,
+    address: address.nullable().default(null),
+    mapsUrl: url.nullable().default(null),
     sourceUrl: url.nullable().default(null),
     notes: notes.nullable().default(null),
     status: z.enum(PLACE_STATUSES).default("want"),
@@ -81,7 +84,9 @@ export type Place = {
   id: number;
   tripId: number;
   name: string;
-  mapsUrl: string;
+  /** Street address as typed, for places without a usable map pin. */
+  address: string | null;
+  mapsUrl: string | null;
   sourceUrl: string | null;
   notes: string | null;
   status: PlaceStatus;
@@ -152,7 +157,8 @@ export type TripPatch = z.infer<typeof tripPatch>;
 export const placePatch = z
   .object({
     name,
-    mapsUrl: url,
+    address: address.nullable(),
+    mapsUrl: url.nullable(),
     sourceUrl: url.nullable(),
     notes: notes.nullable(),
     status: z.enum(PLACE_STATUSES),

@@ -79,3 +79,34 @@ test("a place patch keeps omitted links and notes", async () => {
   const res = await call<PlaceSaveResult>("PATCH", `/api/places/${place.id}`, { name: "Kem bơ Thanh Thảo" });
   expect(res.body.place).toMatchObject({ mapsUrl: MAPS, sourceUrl: "https://www.tiktok.com/@x/video/1", notes: "sầu riêng", status: "want" });
 });
+
+test("a place needs neither a Maps link nor an address, and keeps the address it gets", async () => {
+  const { call, trip } = await withTrip();
+  const bare = await call<PlaceSaveResult>("POST", `/api/trips/${trip.id}/places`, { name: "Somewhere" });
+  expect(bare.status).toBe(201);
+  expect(bare.body.place).toMatchObject({ mapsUrl: null, address: null });
+
+  const court = await call<PlaceSaveResult>("POST", `/api/trips/${trip.id}/places`, {
+    name: "Food court",
+    address: "12 Phan Bội Châu, Đà Lạt",
+  });
+  expect(court.body.place.address).toBe("12 Phan Bội Châu, Đà Lạt");
+  const renamed = await call<PlaceSaveResult>("PATCH", `/api/places/${court.body.place.id}`, { name: "Khu ẩm thực" });
+  expect(renamed.body.place).toMatchObject({ address: "12 Phan Bội Châu, Đà Lạt", mapsUrl: null });
+  const cleared = await call<PlaceSaveResult>("PATCH", `/api/places/${court.body.place.id}`, { address: null });
+  expect(cleared.body.place.address).toBeNull();
+});
+
+test("places without a Maps link are never flagged as duplicates", async () => {
+  const { call, trip } = await withTrip();
+  await call("POST", `/api/trips/${trip.id}/places`, { name: "a" });
+  const second = await call<PlaceSaveResult>("POST", `/api/trips/${trip.id}/places`, { name: "b" });
+  expect(second.body.duplicateOf).toBeNull();
+});
+
+test("search matches the address, ignoring accents", async () => {
+  const { call, trip } = await withTrip();
+  await call("POST", `/api/trips/${trip.id}/places`, { name: "Food court", address: "12 Phan Bội Châu" });
+  const res = await call<PlaceView[]>("GET", `/api/trips/${trip.id}/places?q=phan%20boi%20chau`);
+  expect(res.body.map((p) => p.name)).toEqual(["Food court"]);
+});

@@ -76,14 +76,17 @@ function importTrip(
   const tripId = tripRow.id;
   db.query("UPDATE settings SET active_trip_id = ? WHERE active_trip_id IS NULL").run(tripId);
 
-  const insertPlace = db.query<{ id: number }, [number, string, string, string | null, string | null, string, number | null]>(
-    `INSERT INTO places (trip_id, name, maps_url, source_url, notes, status, rating)
-     VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+  const insertPlace = db.query<
+    { id: number },
+    [number, string, string | null, string | null, string | null, string | null, string, number | null]
+  >(
+    `INSERT INTO places (trip_id, name, address, maps_url, source_url, notes, status, rating)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
   );
   const link = db.query("INSERT OR IGNORE INTO place_categories (place_id, category_id) VALUES (?, ?)");
   const placeIds = new Map<number, number>();
   for (const p of trip.places) {
-    const row = insertPlace.get(tripId, p.name, p.mapsUrl, p.sourceUrl, p.notes, p.status, p.rating);
+    const row = insertPlace.get(tripId, p.name, p.address, p.mapsUrl, p.sourceUrl, p.notes, p.status, p.rating);
     if (!row) throw new Error("Insert returned no row");
     placeIds.set(p.ref, row.id);
     const ids = p.categories.length ? p.categories.map(categoryId) : [otherId];

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NOTES_MAX, PLACE_STATUSES } from "./schemas.ts";
+import { ADDRESS_MAX, NOTES_MAX, PLACE_STATUSES } from "./schemas.ts";
 
 export const EXPORT_VERSION = 1;
 
@@ -13,7 +13,9 @@ const exportPlace = z
     /** Identifier local to this file, referenced by `expenses[].placeRef`. */
     ref: z.number().int().positive(),
     name,
-    mapsUrl: url,
+    /** Absent in files exported before addresses existed. */
+    address: z.string().trim().min(1).max(ADDRESS_MAX).nullable().default(null),
+    mapsUrl: url.nullable(),
     sourceUrl: url.nullable(),
     notes,
     status: z.enum(PLACE_STATUSES),
@@ -72,4 +74,6 @@ export const exportFileSchema = z.object({
 });
 
 export type ExportFile = z.infer<typeof exportFileSchema>;
+/** An export file as read from disk, before defaults fill fields older files lack. */
+export type ExportFileInput = z.input<typeof exportFileSchema>;
 export type ExportTrip = ExportFile["trips"][number];

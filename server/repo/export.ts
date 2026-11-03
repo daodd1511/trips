@@ -24,14 +24,15 @@ function exportTrip(db: Database, trip: TripRow): ExportTrip {
       {
         id: number;
         name: string;
-        maps_url: string;
+        address: string | null;
+        maps_url: string | null;
         source_url: string | null;
         notes: string | null;
         status: PlaceStatus;
         rating: number | null;
       },
       [number]
-    >("SELECT id, name, maps_url, source_url, notes, status, rating FROM places WHERE trip_id = ? ORDER BY id")
+    >("SELECT id, name, address, maps_url, source_url, notes, status, rating FROM places WHERE trip_id = ? ORDER BY id")
     .all(trip.id);
   const categoryNames = db.query<{ name: string }, [number]>(
     `SELECT c.name FROM place_categories pc JOIN categories c ON c.id = pc.category_id
@@ -46,6 +47,7 @@ function exportTrip(db: Database, trip: TripRow): ExportTrip {
     places: places.map((p) => ({
       ref: refOf.get(p.id) ?? 0,
       name: p.name,
+      address: p.address,
       mapsUrl: p.maps_url,
       sourceUrl: p.source_url,
       notes: p.notes,
