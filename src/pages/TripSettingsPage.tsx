@@ -1,4 +1,4 @@
-import { ArrowLeftRight, ChevronRight, Download, Tags, Trash2 } from "lucide-react";
+import { ArrowLeftRight, ChevronRight, Download, RefreshCw, Tags, Trash2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -106,6 +106,15 @@ export function TripSettingsPage() {
           <Download className="text-muted-foreground" aria-hidden />
           <span className="flex-1 text-left">Export this trip</span>
           <span className="text-muted-foreground">JSON</span>
+        </Button>
+        <Button
+          variant="ghost"
+          className="h-12 w-full justify-start rounded-none px-3.5 font-normal"
+          onClick={() => window.location.reload()}
+        >
+          <RefreshCw className="text-muted-foreground" aria-hidden />
+          <span className="flex-1 text-left">Reload app</span>
+          <span className="text-muted-foreground">Gets the latest version</span>
         </Button>
       </div>
 
