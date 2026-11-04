@@ -108,7 +108,7 @@ export function TripsPage() {
       ) : (
         <>
           {active.data && (
-            <section className="px-4">
+            <section className="px-5">
               <h2 className="mb-1 mt-5 text-[13px] font-semibold text-muted-foreground">Active</h2>
               <ul>
                 <TripRow trip={active.data} active onOpen={handleOpen} />
@@ -116,7 +116,7 @@ export function TripsPage() {
             </section>
           )}
           {others.length > 0 && (
-            <section className="px-4">
+            <section className="px-5">
               <h2 className="mb-1 mt-5 text-[13px] font-semibold text-muted-foreground">
                 {active.data ? "Other trips" : "Pick a trip"}
               </h2>
@@ -130,7 +130,7 @@ export function TripsPage() {
         </>
       )}
 
-      <section className="px-4 pb-10">
+      <section className="px-5 pb-10">
         <h2 className="mb-1 mt-5 text-[13px] font-semibold text-muted-foreground">All data</h2>
         <div className="overflow-hidden rounded-card bg-sunken [&>*+*]:border-t [&>*+*]:border-background">
           <Button variant="ghost" className={cn("h-12 w-full justify-start rounded-none px-3.5")} onClick={handleExportAll}>

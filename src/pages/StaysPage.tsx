@@ -24,7 +24,7 @@ function StayCard({ stay, now, onEdit }: { stay: Stay; now: boolean; onEdit: (st
   const phone = stay.notes ? findPhoneNumber(stay.notes) : null;
   const actionClass = now ? "bg-main-ink text-main hover:bg-main-ink" : "bg-background";
   return (
-    <article className={cn("mx-4 mb-2.5 rounded-card bg-sunken p-3.5", now && "bg-main text-main-ink")}>
+    <article className={cn("mx-5 mb-2.5 rounded-card bg-sunken p-3.5", now && "bg-main text-main-ink")}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h2 className="text-[17px] font-semibold">{stay.name}</h2>

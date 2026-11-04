@@ -137,7 +137,7 @@ function PlaceForm({ tripId, place, siblings }: PlaceFormProps) {
           </Button>
         }
       />
-      <FieldStack className="px-4 pb-12 pt-6">
+      <FieldStack className="px-5 pb-12 pt-6">
         <Field label="Name" htmlFor="place-name" error={errors.name?.message}>
           <Input id="place-name" aria-invalid={!!errors.name} {...form.register("name")} />
         </Field>

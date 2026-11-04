@@ -16,7 +16,7 @@ export function MainHeader({ title, subtitle, action, children, className }: Mai
   return (
     <header
       className={cn(
-        "rounded-b-sheet bg-main px-4 pb-[18px] pt-[max(env(safe-area-inset-top),16px)] text-main-ink",
+        "rounded-b-sheet bg-main px-5 pb-[18px] pt-[max(env(safe-area-inset-top),16px)] text-main-ink",
         className,
       )}
     >
@@ -43,7 +43,7 @@ type FormHeaderProps = {
 /** Compact main-colored bar for form and list screens. */
 export function FormHeader({ title, leading, trailing }: FormHeaderProps) {
   return (
-    <header className="grid grid-cols-[1fr_auto_1fr] items-center bg-main px-2 pb-3.5 pt-[max(env(safe-area-inset-top),16px)] text-main-ink">
+    <header className="grid grid-cols-[1fr_auto_1fr] items-center bg-main px-3 pb-3.5 pt-[max(env(safe-area-inset-top),16px)] text-main-ink">
       <div className="justify-self-start pt-9 [&_button]:text-main-ink [&_a]:text-main-ink">{leading}</div>
       <h1 className="pt-9 text-[17px] font-semibold">{title}</h1>
       <div className="justify-self-end pt-9">{trailing}</div>

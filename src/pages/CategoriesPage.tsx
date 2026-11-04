@@ -107,8 +107,8 @@ export function CategoriesPage() {
           </Button>
         }
       />
-      <p className="mx-4 mb-1 mt-5 text-[13px] font-semibold text-muted-foreground">Shared by all trips</p>
-      <ul className="px-4 pb-10">
+      <p className="mx-5 mb-1 mt-5 text-[13px] font-semibold text-muted-foreground">Shared by all trips</p>
+      <ul className="px-5 pb-10">
         {(categories.data ?? []).map((c) => {
           const Icon = categoryIcon(c.name);
           return (

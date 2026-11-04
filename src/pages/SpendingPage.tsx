@@ -37,7 +37,7 @@ function QuickEntry({ tripId, currency, onAdded }: { tripId: number; currency: s
   };
 
   return (
-    <div className="fixed inset-x-4 bottom-[calc(max(env(safe-area-inset-bottom),16px)+76px)] z-30 mx-auto max-w-[448px]">
+    <div className="fixed inset-x-5 bottom-[calc(max(env(safe-area-inset-bottom),16px)+76px)] z-30 mx-auto max-w-[448px]">
       <form
         onSubmit={handleSubmit}
         noValidate
@@ -86,7 +86,7 @@ export function SpendingPage() {
 
   return (
     <>
-      <header className="rounded-b-sheet bg-main px-4 pb-5 pt-[max(env(safe-area-inset-top),16px)] text-main-ink">
+      <header className="rounded-b-sheet bg-main px-5 pb-5 pt-[max(env(safe-area-inset-top),16px)] text-main-ink">
         <p className="pt-9 text-[13px] text-main-muted">Spent in {trip.name}</p>
         <h1 className="mt-0.5 text-[38px] font-bold leading-[1.1] tracking-[-0.03em]">
           {formatMoney(data?.total ?? 0, trip.currency)}
@@ -103,7 +103,7 @@ export function SpendingPage() {
         )}
       </header>
 
-      <section aria-label="Expenses" className="px-4 pb-[120px] pt-1.5">
+      <section aria-label="Expenses" className="px-5 pb-[120px] pt-1.5">
         {expenses.isPending ? (
           <p className="py-6 text-center text-muted-foreground">Loading spending…</p>
         ) : expenses.isError ? (

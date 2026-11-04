@@ -108,7 +108,7 @@ export function PlacesPage() {
         value={cats.map(String)}
         onValueChange={(values) => setParam("cats", values.join(","))}
         aria-label="Filter by category"
-        className="grid w-full grid-cols-5 gap-2 px-4 pb-1.5 pt-4"
+        className="grid w-full grid-cols-5 gap-2 px-5 pb-1.5 pt-4"
       >
         {(categories.data ?? []).map((c) => {
           const Icon = categoryIcon(c.name);
@@ -128,8 +128,8 @@ export function PlacesPage() {
         })}
       </ToggleGroup>
 
-      <div className="relative px-4 pt-2.5">
-        <Search className="pointer-events-none absolute left-[30px] top-[23px] size-[18px] text-muted-foreground" aria-hidden />
+      <div className="relative px-5 pt-2.5">
+        <Search className="pointer-events-none absolute left-[34px] top-[23px] size-[18px] text-muted-foreground" aria-hidden />
         <Input
           type="search"
           value={q}
@@ -145,7 +145,7 @@ export function PlacesPage() {
         value={status}
         onValueChange={(value) => value && setParam("status", value === "want" ? "" : value)}
         aria-label="Status"
-        className="grid w-full grid-cols-3 gap-1.5 px-4 pb-1.5 pt-2.5"
+        className="grid w-full grid-cols-3 gap-1.5 px-5 pb-1.5 pt-2.5"
       >
         {PLACE_STATUSES.map((s) => (
           <ToggleGroupItem key={s} value={s} className="h-9">
@@ -155,7 +155,7 @@ export function PlacesPage() {
         ))}
       </ToggleGroup>
 
-      <section aria-label="Places" className="px-4">
+      <section aria-label="Places" className="px-5">
         {places.isPending ? (
           <p className="py-6 text-center text-muted-foreground">Loading places…</p>
         ) : places.isError ? (

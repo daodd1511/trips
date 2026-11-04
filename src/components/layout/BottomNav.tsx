@@ -33,7 +33,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Sections"
-      className="fixed inset-x-4 bottom-[max(env(safe-area-inset-bottom),16px)] z-40 mx-auto flex h-16 max-w-[448px] items-center justify-around rounded-full bg-main px-2 shadow-[0_12px_28px_-10px_rgb(16_32_25/0.55)]"
+      className="fixed inset-x-5 bottom-[max(env(safe-area-inset-bottom),16px)] z-40 mx-auto flex h-16 max-w-[448px] items-center justify-around rounded-full bg-main px-2 shadow-[0_12px_28px_-10px_rgb(16_32_25/0.55)]"
     >
       <NavItem {...places} />
       <NavItem {...stays} />
