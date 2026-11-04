@@ -120,6 +120,12 @@
     /* No double-tap zoom, so taps fire without waiting to see if a second one follows. */
     touch-action: manipulation;
   }
+  /* iOS zooms in on any field below 16px when it gets focus. */
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
   body {
     @apply bg-background text-foreground;
     font-size: 15px;
